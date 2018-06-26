@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">叫号</string>
+    <string name="copyright">语音合成引擎由百度强力驱动\n应用开发者: 吴晨\n版权没有 仿冒不究</string>
+    <string name="exit">再按一次以退出</string>
+    <string name="shake">摇一摇</string>
+</resources>
