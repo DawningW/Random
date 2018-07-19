@@ -1,0 +1,19 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+
+        android:key="voice_text"
+        android:title="更改朗读文本"
+        android:defaultValue="请 %s 号同学回答问题"
+        android:inputType="textCapWords"
+        android:capitalize="words"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:selectAllOnFocus="true" />
+
+    <SwitchPreference
+        android:key="example_switch"
+        android:title="开关示例"
+        android:summary="这是一个开关"
+        android:defaultValue="true" />
+
+</PreferenceScreen>

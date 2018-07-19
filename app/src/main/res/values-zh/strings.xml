@@ -4,4 +4,17 @@
     <string name="copyright">语音合成引擎由百度强力驱动\n应用开发者: 吴晨\n版权没有 仿冒不究</string>
     <string name="exit">再按一次以退出</string>
     <string name="shake">摇一摇</string>
+    <string name="set">集合</string>
+    <string name="set_number">集合元素数量: %s</string>
+    <string name="set_edit">编辑集合</string>
+    <string name="voice">语音</string>
+    <string name="voice_text">朗读文本: %s</string>
+    <string name="voice_edit">编辑语音</string>
+    <string name="settings">更多设置</string>
+    <string name="help">帮助</string>
+    <string name="set_menu_add">添加一个元素</string>
+    <string name="set_menu_clear">清空集合</string>
+    <string name="set_menu_save">保存到文件</string>
+    <string name="set_menu_read">从文件读取</string>
+    <string name="set_menu_addmany">批量添加序号</string>
 </resources>

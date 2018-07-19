@@ -1,7 +1,6 @@
 package io.github.dawncraft.qingchenw.random;
 
-import android.app.Dialog;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -9,27 +8,21 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.annotation.StringRes;
-import android.support.v7.app.AlertDialog;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.text.InputType;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.Animation;
-import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baidu.tts.client.SpeechError;
-import com.baidu.tts.client.SpeechSynthesizer;
 import com.baidu.tts.client.SpeechSynthesizerListener;
 import com.baidu.tts.client.TtsMode;
 
-import java.util.HashMap;
 import java.util.Random;
 
 import butterknife.BindAnim;
@@ -44,23 +37,8 @@ import butterknife.ButterKnife;
  */
 public class MainActivity extends AppCompatActivity implements SensorEventListener, SpeechSynthesizerListener
 {
-    private static HashMap<String, String> params = new HashMap<>();
-    static
-    {
-        // 设置在线发声音人： 0 普通女声（默认） 1 普通男声 2 特别男声 3 情感男声<度逍遥> 4 情感儿童声<度丫丫>
-        params.put(SpeechSynthesizer.PARAM_SPEAKER, "0");
-        // 设置合成的音量，0-9 ，默认 5
-        params.put(SpeechSynthesizer.PARAM_VOLUME, "9");
-        // 设置合成的语速，0-9 ，默认 5
-        params.put(SpeechSynthesizer.PARAM_SPEED, "5");
-        // 设置合成的语调，0-9 ，默认 5
-        params.put(SpeechSynthesizer.PARAM_PITCH, "5");
-        // 该参数设置为TtsMode.MIX生效。即纯在线模式不生效。
-        params.put(SpeechSynthesizer.PARAM_MIX_MODE, SpeechSynthesizer.MIX_MODE_HIGH_SPEED_SYNTHESIZE_WIFI);
-    }
     public static int range = 20;
-    private int number = 50;
-    private String speech = "请 %s 号同学回答问题";
+
 
     private long exitTime = 0;
     private boolean isShaking = false;
@@ -72,17 +50,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public MySynthesizer speechSynthesizer;
 
     @BindView(R.id.topLayout)
-    public LinearLayout topLayout;
-    @BindView(R.id.number)
-    public TextView numberText;
+    public ConstraintLayout topLayout;
+    @BindView(R.id.setText)
+    public TextView setText;
     @BindView(R.id.topDivider)
     public View topDivider;
+    @BindView(R.id.outputText)
+    public TextView outputText;
     @BindView(R.id.imageButton)
     public ImageButton imageButton;
-    @BindView(R.id.output)
-    public TextView outputText;
     @BindView(R.id.bottomLayout)
-    public LinearLayout bottomLayout;
+    public ConstraintLayout bottomLayout;
     @BindView(R.id.bottomDivider)
     public View bottomDivider;
 
@@ -107,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // 初始化ButterKnife
         ButterKnife.bind(this);
         // 初始化Views
-        numberText.setText(String.valueOf(number));
+        setText.setText(String.valueOf(SetActivity.elements.size()));
     }
 
     @Override
@@ -136,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         synthesizerConfig = new MySynthesizer.Config("11443617",
                 "iNmAH7IzeHm2HT6eNmYIu5OF",
                 "yv3LkAYkrc6Gw32IG1UB12WBlwY5AheX",
-                TtsMode.MIX, params, MainActivity.this);
+                TtsMode.MIX, null, MainActivity.this);
         speechSynthesizer = new MySynthesizer(this);
         Thread thread = new Thread()
         {
@@ -238,7 +216,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onBackPressed()
     {
-        if ((System.currentTimeMillis() - exitTime) > 2000)
+        if (isShaking)
+        {
+            stop();
+        }
+        else if ((System.currentTimeMillis() - exitTime) > 2000)
         {
             toast(R.string.exit);
             exitTime = System.currentTimeMillis();
@@ -260,44 +242,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     start();
                 break;
             }
-            case R.id.numberButton:
+            case R.id.setButton:
             {
-                final EditText editText = new EditText(this);
-                editText.setText(String.valueOf(number));
-                editText.setHint("请输入大于0的整数");
-                editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-                editText.setSelection(editText.getText().length());
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("输入人数").setView(editText);
-                builder.setPositiveButton("确定", new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        int num = Integer.valueOf(editText.getText().toString());
-                        if(num > 0 && num < Integer.MAX_VALUE)
-                        {
-                            number = num;
-                            numberText.setText(String.valueOf(num));
-                        }
-                        else
-                        {
-                            toast("无效参数, 范围为: " + 0 + " ~ " + Integer.MAX_VALUE);
-                        }
-                    }
-                });
-                builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        dialog.dismiss();
-                    }
-                });
-                Dialog dialog = builder.create();
-                dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                dialog.show();
+                startActivity(new Intent(this, SetActivity.class));
+                break;
+            }
+            case R.id.voiceButton:
+            {
+                startActivity(new Intent(this, VoiceActivity.class));
                 break;
             }
         }
@@ -307,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     {
         isShaking = true;
         // 生成文本
-        String text = String.format(speech, String.valueOf(generate(number)));
+        String text = String.format(VoiceActivity.text, String.valueOf(generate(SetActivity.elements.size())));
         // 设置中心文本
         outputText.setText(text);
         // 隐藏中心按钮
@@ -328,6 +280,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void stop()
     {
+        // 停止语音
+        speechSynthesizer.stop();
         // 播放动画
         topLayout.startAnimation(backUpAnim);
         bottomLayout.startAnimation(backDownAnim);
