@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">叫号</string>
     <string name="copyright">语音合成引擎由百度强力驱动\n应用开发者: 吴晨\n版权没有 仿冒不究</string>
@@ -17,4 +16,6 @@
     <string name="set_menu_save">保存到文件</string>
     <string name="set_menu_read">从文件读取</string>
     <string name="set_menu_addmany">批量添加序号</string>
+    <string name="set_blank">请先向集合中添加元素</string>
+    <string name="voice_default">请 %s 号同学回答问题</string>
 </resources>

@@ -10,6 +10,7 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.support.annotation.StringRes;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -37,9 +38,6 @@ import butterknife.ButterKnife;
  */
 public class MainActivity extends AppCompatActivity implements SensorEventListener, SpeechSynthesizerListener
 {
-    public static int range = 20;
-
-
     private long exitTime = 0;
     private boolean isShaking = false;
 
@@ -85,7 +83,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // 初始化ButterKnife
         ButterKnife.bind(this);
         // 初始化Views
-        setText.setText(String.valueOf(SetActivity.elements.size()));
+        SetActivity.loadConfig(PreferenceManager.getDefaultSharedPreferences(this));
+        setText.setText(String.format(getString(R.string.set_number),
+                String.valueOf(SetActivity.elements.size())));
+        VoiceActivity.loadConfig(PreferenceManager.getDefaultSharedPreferences(this));
+        outputText.setText(String.format(getString(R.string.voice_text),
+                VoiceActivity.text));
     }
 
     @Override
@@ -164,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // 获取三个方向值
             for (float value : sensorEvent.values)
             {
-                if (Math.abs(value) > range)
+                if (Math.abs(value) > 20)
                 {
                     start();
                     break;
@@ -252,30 +255,47 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 startActivity(new Intent(this, VoiceActivity.class));
                 break;
             }
+            case R.id.settingButton:
+            {
+                break;
+            }
+            case R.id.helpButton:
+            {
+                break;
+            }
         }
     }
 
     public void start()
     {
-        isShaking = true;
-        // 生成文本
-        String text = String.format(VoiceActivity.text, String.valueOf(generate(SetActivity.elements.size())));
-        // 设置中心文本
-        outputText.setText(text);
-        // 隐藏中心按钮
-        imageButton.setVisibility(View.GONE);
-        // 显示这两条线
-        topDivider.setVisibility(View.VISIBLE);
-        bottomDivider.setVisibility(View.VISIBLE);
-        // 播放动画
-        topLayout.startAnimation(goUpAnim);
-        bottomLayout.startAnimation(goDownAnim);
-        // 发出振动
-        vibrator.vibrate(300);
-        // 播放提示音
-        soundPool.play(openAudio, 1, 1, 0, 0, 1);
-        // 播放语音
-        speechSynthesizer.speak(text, "number");
+        int size = SetActivity.elements.size();
+        if(size > 0)
+        {
+            isShaking = true;
+            // 生成文本
+            String element = SetActivity.elements.get(generate(size));
+            String text = String.format(VoiceActivity.text, element);
+            // 设置中心文本
+            outputText.setText(text);
+            // 隐藏中心按钮
+            imageButton.setVisibility(View.GONE);
+            // 显示这两条线
+            topDivider.setVisibility(View.VISIBLE);
+            bottomDivider.setVisibility(View.VISIBLE);
+            // 播放动画
+            topLayout.startAnimation(goUpAnim);
+            bottomLayout.startAnimation(goDownAnim);
+            // 发出振动
+            vibrator.vibrate(300);
+            // 播放提示音
+            soundPool.play(openAudio, 1, 1, 0, 0, 1);
+            // 播放语音
+            speechSynthesizer.speak(text, "number");
+        }
+        else
+        {
+            toast(R.string.set_blank);
+        }
     }
 
     public void stop()
@@ -306,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public Random rand = new Random();
     public int generate(int range)
     {
-        return rand.nextInt(range) + 1;
+        return rand.nextInt(range);
     }
 
     public void toast(@StringRes int msgId)

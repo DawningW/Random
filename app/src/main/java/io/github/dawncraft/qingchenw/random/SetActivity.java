@@ -1,12 +1,15 @@
 package io.github.dawncraft.qingchenw.random;
 
-import android.annotation.TargetApi;
+import android.Manifest;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,9 +22,18 @@ import android.view.animation.Animation;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindAnim;
@@ -30,6 +42,7 @@ import butterknife.ButterKnife;
 
 public class SetActivity extends AppCompatActivity
 {
+    public static final int EXTERNAL_STORAGE_REQ_CODE = 10;
     public static List<String> elements = new ArrayList<>();
 
     public RecyclerAdapter recyclerAdapter;
@@ -57,9 +70,18 @@ public class SetActivity extends AppCompatActivity
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // 初始化ButterKnife
         ButterKnife.bind(this);
+        // 申请权限
+        int permission = ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permission != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    EXTERNAL_STORAGE_REQ_CODE);
+        }
         // 初始化配置
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        elements = Arrays.asList(preferences.getString("elements", "").split(","));
+        loadConfig();
         // 初始化布局
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -72,12 +94,21 @@ public class SetActivity extends AppCompatActivity
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
-    @TargetApi(26)// TODO 先凑合着
     @Override
     protected void onDestroy()
     {
-        preferences.edit().putString("elements", String.join(",", elements.toArray(new String[0])));
+        saveConfig();
         super.onDestroy();
+    }
+
+    private void loadConfig()
+    {
+        loadConfig(preferences);
+    }
+
+    private void saveConfig()
+    {
+        saveConfig(preferences);
     }
 
     public void onClicked(View view)
@@ -133,6 +164,7 @@ public class SetActivity extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which)
             {
                 recyclerAdapter.insertItem(recyclerAdapter.getItemCount(), editText.getText().toString());
+                saveConfig();
             }
         });
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
@@ -168,10 +200,11 @@ public class SetActivity extends AppCompatActivity
                 {
                     recyclerAdapter.insertItemRange(recyclerAdapter.getItemCount(),
                             recyclerAdapter.getItemCount() + num);
+                    saveConfig();
                 }
                 else
                 {
-                    //toast("无效参数, 范围为: " + 0 + " ~ " + Integer.MAX_VALUE);
+                    toast("无效参数, 范围为: " + 0 + " ~ " + Integer.MAX_VALUE);
                 }
             }
         });
@@ -192,6 +225,7 @@ public class SetActivity extends AppCompatActivity
     public void readFloatButton()
     {
         LinearLayout linearLayout = new LinearLayout(this);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
         final EditText editText = new EditText(this);
         editText.setHint("输入逗号分隔符文件路径");
         linearLayout.addView(editText);
@@ -199,15 +233,25 @@ public class SetActivity extends AppCompatActivity
         checkBox.setText("导入前清空集合");
         linearLayout.addView(checkBox);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("输入文件路径").setView(linearLayout);
+        builder.setTitle("从文件中读取").setView(linearLayout);
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                if(checkBox.isChecked())
-                    recyclerAdapter.clearItem();
-
+                String str = loadFile(editText.getText().toString());
+                if(str != null)
+                {
+                    String[] strArray = str.split(",");
+                    if(strArray.length > 0)
+                    {
+                        if(checkBox.isChecked()) recyclerAdapter.clearItem();
+                        Collections.addAll(elements, strArray);
+                        saveConfig();
+                        return;
+                    }
+                }
+                toast("不是有效的逗号分隔符文件");
             }
         });
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
@@ -226,11 +270,136 @@ public class SetActivity extends AppCompatActivity
 
     public void saveFloatButton()
     {
-
+        LinearLayout linearLayout = new LinearLayout(this);
+        final EditText editText = new EditText(this);
+        editText.setHint("输入逗号分隔符文件路径");
+        linearLayout.addView(editText);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("保存到文件").setView(linearLayout);
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                StringBuilder strBuilder = new StringBuilder();
+                for (int i = 0; i < elements.size(); i++)
+                {
+                    strBuilder.append(elements.get(i));
+                    if(i != elements.size() - 1)
+                    {
+                        strBuilder.append(",");
+                    }
+                }
+                saveFile(editText.getText().toString(), strBuilder.toString());
+            }
+        });
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.dismiss();
+            }
+        });
+        Dialog dialog = builder.create();
+        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        dialog.show();
     }
 
     public void clearDialog()
     {
-        recyclerAdapter.clearItem();
+        LinearLayout linearLayout = new LinearLayout(this);
+        final TextView textView = new TextView(this);
+        textView.setText("真的要清空集合吗");
+        linearLayout.addView(textView);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("清空集合").setView(linearLayout);
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                recyclerAdapter.clearItem();
+                saveConfig();
+            }
+        });
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.dismiss();
+            }
+        });
+        Dialog dialog = builder.create();
+        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        dialog.show();
+    }
+
+    public static void loadConfig(SharedPreferences preferences)
+    {
+        elements.clear();
+        int size = preferences.getInt("elements_size", 0);
+        for(int i = 0; i < size; i++)
+        {
+            elements.add(preferences.getString("element_" + i, "unknown"));
+        }
+    }
+
+    public static void saveConfig(SharedPreferences preferences)
+    {
+        SharedPreferences.Editor editor = preferences.edit();
+        int size = elements.size();
+        editor.putInt("elements_size", size);
+        for(int i = 0; i < size; i++)
+        {
+            editor.putString("element_" + i, elements.get(i));
+        }
+        editor.apply();
+    }
+
+    public static String loadFile(String path)
+    {
+        try
+        {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(path)));
+            StringBuffer stringBuilder = new StringBuffer();
+            String readline = "";
+            while ((readline = bufferedReader.readLine()) != null)
+            {
+                stringBuilder.append(readline);
+            }
+            bufferedReader.close();
+            return stringBuilder.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void saveFile(String path, String content)
+    {
+        try
+        {
+            File file = new File(path);
+            file.createNewFile();
+            OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file, false));
+            writer.append(content);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void toast(@StringRes int msgId)
+    {
+        toast(getString(msgId));
+    }
+
+    public void toast(String msg)
+    {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 }

@@ -37,6 +37,14 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
     public void onBindViewHolder(@NonNull final Holder holder, int position)
     {
         holder.nameText.setText(list.get(position));
+        holder.nameText.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                // TODO 修改元素
+            }
+        });
         holder.deleteButton.setOnClickListener(new View.OnClickListener()
         {
             @Override

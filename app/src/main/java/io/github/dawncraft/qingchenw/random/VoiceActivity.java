@@ -60,6 +60,35 @@ public class VoiceActivity extends PreferenceActivity
         }
         // 初始化配置
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        text = preferences.getString("voice_text", "");
+        loadConfig();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        loadConfig();
+        super.onDestroy();
+    }
+
+    private void loadConfig()
+    {
+        loadConfig(preferences);
+    }
+
+    private void saveConfig()
+    {
+        saveConfig(preferences);
+    }
+
+    public static void loadConfig(SharedPreferences preferences)
+    {
+        text = preferences.getString("voice_text", "请 %s 号同学回答问题");
+    }
+
+    public static void saveConfig(SharedPreferences preferences)
+    {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("voice_text", text);
+        editor.apply();
     }
 }

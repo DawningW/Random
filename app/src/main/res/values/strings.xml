@@ -16,5 +16,7 @@
     <string name="set_menu_save">Save to file</string>
     <string name="set_menu_read">Read from file</string>
     <string name="set_menu_addmany">Add some numbers</string>
+    <string name="set_blank">Please input some elements</string>
+    <string name="voice_default">Please %s answer this problem</string>
 
 </resources>
