@@ -27,8 +27,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SetActivity"
-            android:label="@string/set_edit"
+            android:name=".ListActivity"
+            android:label="@string/list_edit"
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

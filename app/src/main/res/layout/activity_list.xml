@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SetActivity">
+    tools:context=".ListActivity">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
@@ -14,7 +14,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@layout/item_element">
+
     </android.support.v7.widget.RecyclerView>
 
     <LinearLayout
@@ -43,7 +45,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="14dp"
                 android:layout_weight="1"
-                android:text="@string/set_menu_add" />
+                android:text="@string/list_menu_add" />
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/addFloatButton"
@@ -73,7 +75,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="14dp"
                 android:layout_weight="1"
-                android:text="@string/set_menu_addmany" />
+                android:text="@string/list_menu_addmany" />
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/addManyFloatButton"
@@ -103,7 +105,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="14dp"
                 android:layout_weight="1"
-                android:text="@string/set_menu_read" />
+                android:text="@string/list_menu_read" />
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/readFloatButton"
@@ -133,7 +135,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="14dp"
                 android:layout_weight="1"
-                android:text="@string/set_menu_save" />
+                android:text="@string/list_menu_save" />
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/saveFloatButton"
@@ -163,7 +165,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="14dp"
                 android:layout_weight="1"
-                android:text="@string/set_menu_clear" />
+                android:text="@string/list_menu_clear" />
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/clearFloatButton"

@@ -1,6 +1,7 @@
 package io.github.dawncraft.qingchenw.random;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -11,12 +12,12 @@ import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
-import android.support.annotation.StringRes;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +31,10 @@ import butterknife.BindAnim;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static android.os.Process.killProcess;
+import static android.os.Process.myPid;
+import static java.lang.System.currentTimeMillis;
+
 /**
  * 一个摇号的小应用
  * 感谢changer0的教程https://www.jianshu.com/p/bc5298651b30
@@ -38,30 +43,45 @@ import butterknife.ButterKnife;
  */
 public class MainActivity extends AppCompatActivity implements SensorEventListener, SpeechSynthesizerListener
 {
+    public static final int sensitivity = 20;
     private long exitTime = 0;
     private boolean isShaking = false;
 
+    // 配置
+    public static SharedPreferences sharedPreferences;
+    // 传感器
     public SensorManager sensorManager;
+    // 振动
     public Vibrator vibrator;
+    // 音效池
     public SoundPool soundPool;
+    // 百度语音合成引擎
     public MySynthesizer.Config synthesizerConfig;
     public MySynthesizer speechSynthesizer;
 
+    // 顶部布局
     @BindView(R.id.topLayout)
     public ConstraintLayout topLayout;
-    @BindView(R.id.setText)
-    public TextView setText;
+    @BindView(R.id.listText)
+    public TextView listText;
+    @BindView(R.id.voiceText)
+    public TextView voiceText;
     @BindView(R.id.topDivider)
     public View topDivider;
+    // 中部按钮
     @BindView(R.id.outputText)
     public TextView outputText;
     @BindView(R.id.imageButton)
     public ImageButton imageButton;
+    // 底部布局
     @BindView(R.id.bottomLayout)
     public ConstraintLayout bottomLayout;
+    @BindView(R.id.stateImage)
+    public ImageView stateImage;
     @BindView(R.id.bottomDivider)
     public View bottomDivider;
 
+    // 动画
     @BindAnim(R.anim.anim_go_up)
     public Animation goUpAnim;
     @BindAnim(R.anim.anim_go_down)
@@ -71,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @BindAnim(R.anim.anim_back_down)
     public Animation backDownAnim;
 
+    // 音效
     public int openAudio;
     public int closeAudio;
 
@@ -82,12 +103,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         // 初始化ButterKnife
         ButterKnife.bind(this);
-        // 初始化Views
-        SetActivity.loadConfig(PreferenceManager.getDefaultSharedPreferences(this));
-        setText.setText(String.format(getString(R.string.set_number),
-                String.valueOf(SetActivity.elements.size())));
-        VoiceActivity.loadConfig(PreferenceManager.getDefaultSharedPreferences(this));
-        outputText.setText(String.format(getString(R.string.voice_text),
+        // 初始化配置
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        // TODO 初始化其他activity的配置
+        ListActivity.loadConfig(sharedPreferences);
+        VoiceActivity.loadConfig(sharedPreferences);
+        // 初始化控件
+        listText.setText(String.format(getString(R.string.list_number),
+                String.valueOf(ListActivity.elements.size())));
+        voiceText.setText(String.format(getString(R.string.voice_text),
                 VoiceActivity.text));
     }
 
@@ -111,12 +135,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         // 初始化音效
         soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 5);
-        openAudio = soundPool.load(this, R.raw.open, 1);
+        openAudio = soundPool.load(this, R.raw.open,1);
         closeAudio = soundPool.load(this, R.raw.close, 1);
         // 初始化语音合成引擎
         synthesizerConfig = new MySynthesizer.Config("11443617",
                 "iNmAH7IzeHm2HT6eNmYIu5OF",
-                "yv3LkAYkrc6Gw32IG1UB12WBlwY5AheX",
+                "yv3LkAYkrc6Gw32IG1UB12WB lwY5AheX",
                 TtsMode.MIX, null, MainActivity.this);
         speechSynthesizer = new MySynthesizer(this);
         Thread thread = new Thread()
@@ -167,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // 获取三个方向值
             for (float value : sensorEvent.values)
             {
-                if (Math.abs(value) > 20)
+                if (Math.abs(value) > sensitivity)
                 {
                     start();
                     break;
@@ -197,23 +221,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSpeechFinish(String s)
     {
-        if(s.equals("number"))
+        this.runOnUiThread(new Runnable()
         {
-            this.runOnUiThread(new Runnable()
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
-                {
-                    stop();
-                }
-            });
-        }
+                stop();
+            }
+        });
     }
 
     @Override
     public void onError(String s, SpeechError speechError)
     {
-        toast("合成语音播放错误: " + speechError.toString());
+        Utils.toast(this, "合成语音播放错误: " + speechError.toString(), Toast.LENGTH_LONG);
     }
 
     @Override
@@ -223,15 +244,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         {
             stop();
         }
-        else if ((System.currentTimeMillis() - exitTime) > 2000)
+        else if ((currentTimeMillis() - exitTime) > 2000)
         {
-            toast(R.string.exit);
-            exitTime = System.currentTimeMillis();
+            Utils.toast(this, R.string.exit);
+            exitTime = currentTimeMillis();
         }
         else
         {
             super.onBackPressed();
-            android.os.Process.killProcess(android.os.Process.myPid());
+            killProcess(myPid());
         }
     }
 
@@ -245,9 +266,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     start();
                 break;
             }
-            case R.id.setButton:
+            case R.id.listButton:
             {
-                startActivity(new Intent(this, SetActivity.class));
+                startActivity(new Intent(this, ListActivity.class));
                 break;
             }
             case R.id.voiceButton:
@@ -268,12 +289,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void start()
     {
-        int size = SetActivity.elements.size();
+        int size = ListActivity.elements.size();
         if(size > 0)
         {
             isShaking = true;
             // 生成文本
-            String element = SetActivity.elements.get(generate(size));
+            String element = ListActivity.elements.get(generate(size));
             String text = String.format(VoiceActivity.text, element);
             // 设置中心文本
             outputText.setText(text);
@@ -294,12 +315,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         else
         {
-            toast(R.string.set_blank);
+            Utils.toast(this, R.string.list_blank);
         }
     }
 
     public void stop()
     {
+        isShaking = false;
         // 停止语音
         speechSynthesizer.stop();
         // 播放动画
@@ -318,7 +340,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 // 隐藏这两条线
                 topDivider.setVisibility(View.GONE);
                 bottomDivider.setVisibility(View.GONE);
-                isShaking = false;
             }
         }, 300);
     }
@@ -327,15 +348,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public int generate(int range)
     {
         return rand.nextInt(range);
-    }
-
-    public void toast(@StringRes int msgId)
-    {
-        toast(getString(msgId));
-    }
-
-    public void toast(String msg)
-    {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 }

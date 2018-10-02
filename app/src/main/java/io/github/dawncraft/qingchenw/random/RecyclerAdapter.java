@@ -1,18 +1,22 @@
 package io.github.dawncraft.qingchenw.random;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.Collections;
 import java.util.List;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder>
@@ -42,7 +46,32 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
             @Override
             public void onClick(View view)
             {
-                // TODO 修改元素
+                final EditText editText = new EditText(view.getContext());
+                editText.setHint("更改该元素名字");
+                editText.setText(holder.nameText.getText());
+                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                builder.setTitle("更改名字").setView(editText);
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        changeItem(holder.getLayoutPosition(), editText.getText().toString());
+                        ListActivity.saveConfig();
+                    }
+                });
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        dialog.dismiss();
+                    }
+                });
+                Dialog dialog = builder.create();
+                dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                dialog.show();
             }
         });
         holder.deleteButton.setOnClickListener(new View.OnClickListener()
@@ -62,6 +91,20 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
         return list.size();
     }
 
+    public void insertItem(int position, String name)
+    {
+        list.add(position, name);
+        notifyItemInserted(position);
+    }
+
+    public void insertItemRange(int fromPosition, int toPosition)
+    {
+        for (int i = fromPosition; i <= toPosition ; ++i)
+            list.add(String.valueOf(i));
+        int count = toPosition - fromPosition;
+        notifyItemRangeInserted(fromPosition, count);
+    }
+
     public void changeItem(int position, String name)
     {
         list.set(position, name);
@@ -76,20 +119,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
         list.remove(fromPosition);
         list.add(toPosition, item);
         notifyItemMoved(fromPosition, toPosition);
-    }
-
-    public void insertItem(int position, String name)
-    {
-        list.add(position, name);
-        notifyItemInserted(position);
-    }
-
-    public void insertItemRange(int fromPosition, int toPosition)
-    {
-        for (int i = fromPosition; i <= toPosition ; ++i)
-            list.add(String.valueOf(i));
-        int count = toPosition - fromPosition;
-        notifyItemRangeInserted(fromPosition, count);
     }
 
     public void deleteItem(int position)

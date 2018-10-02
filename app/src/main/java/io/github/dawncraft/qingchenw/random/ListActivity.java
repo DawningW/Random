@@ -6,8 +6,6 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -23,15 +21,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,14 +30,13 @@ import butterknife.BindAnim;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class SetActivity extends AppCompatActivity
+public class ListActivity extends AppCompatActivity
 {
     public static final int EXTERNAL_STORAGE_REQ_CODE = 10;
     public static List<String> elements = new ArrayList<>();
 
     public RecyclerAdapter recyclerAdapter;
     public ItemTouchHelper itemTouchHelper;
-    public SharedPreferences preferences;
 
     @BindView(R.id.recyclerView)
     public RecyclerView recyclerView;
@@ -65,7 +54,7 @@ public class SetActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_set);
+        setContentView(R.layout.activity_list);
         if(getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // 初始化ButterKnife
@@ -80,7 +69,6 @@ public class SetActivity extends AppCompatActivity
                     EXTERNAL_STORAGE_REQ_CODE);
         }
         // 初始化配置
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         loadConfig();
         // 初始化布局
         LinearLayoutManager manager = new LinearLayoutManager(this);
@@ -101,14 +89,26 @@ public class SetActivity extends AppCompatActivity
         super.onDestroy();
     }
 
-    private void loadConfig()
+    private static void loadConfig()
     {
-        loadConfig(preferences);
+        elements.clear();
+        int size = MainActivity.sharedPreferences.getInt("elements_size", 0);
+        for(int i = 0; i < size; i++)
+        {
+            elements.add(MainActivity.sharedPreferences.getString("element_" + i, "unknown"));
+        }
     }
 
-    private void saveConfig()
+    public static void saveConfig()
     {
-        saveConfig(preferences);
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        int size = elements.size();
+        editor.putInt("elements_size", size);
+        for(int i = 0; i < size; i++)
+        {
+            editor.putString("element_" + i, elements.get(i));
+        }
+        editor.apply();
     }
 
     public void onClicked(View view)
@@ -204,7 +204,7 @@ public class SetActivity extends AppCompatActivity
                 }
                 else
                 {
-                    toast("无效参数, 范围为: " + 0 + " ~ " + Integer.MAX_VALUE);
+                    Utils.toast(ListActivity.this, "无效参数, 范围为: " + 0 + " ~ " + Integer.MAX_VALUE);
                 }
             }
         });
@@ -239,7 +239,7 @@ public class SetActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                String str = loadFile(editText.getText().toString());
+                String str = Utils.readFile(editText.getText().toString());
                 if(str != null)
                 {
                     String[] strArray = str.split(",");
@@ -251,7 +251,7 @@ public class SetActivity extends AppCompatActivity
                         return;
                     }
                 }
-                toast("不是有效的逗号分隔符文件");
+                Utils.toast(ListActivity.this,"不是有效的逗号分隔符文件");
             }
         });
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
@@ -290,7 +290,7 @@ public class SetActivity extends AppCompatActivity
                         strBuilder.append(",");
                     }
                 }
-                saveFile(editText.getText().toString(), strBuilder.toString());
+                Utils.writeFile(editText.getText().toString(), strBuilder.toString());
             }
         });
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
@@ -336,70 +336,5 @@ public class SetActivity extends AppCompatActivity
         dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         dialog.show();
-    }
-
-    public static void loadConfig(SharedPreferences preferences)
-    {
-        elements.clear();
-        int size = preferences.getInt("elements_size", 0);
-        for(int i = 0; i < size; i++)
-        {
-            elements.add(preferences.getString("element_" + i, "unknown"));
-        }
-    }
-
-    public static void saveConfig(SharedPreferences preferences)
-    {
-        SharedPreferences.Editor editor = preferences.edit();
-        int size = elements.size();
-        editor.putInt("elements_size", size);
-        for(int i = 0; i < size; i++)
-        {
-            editor.putString("element_" + i, elements.get(i));
-        }
-        editor.apply();
-    }
-
-    public static String loadFile(String path)
-    {
-        try
-        {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(path)));
-            StringBuffer stringBuilder = new StringBuffer();
-            String readline = "";
-            while ((readline = bufferedReader.readLine()) != null)
-            {
-                stringBuilder.append(readline);
-            }
-            bufferedReader.close();
-            return stringBuilder.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static void saveFile(String path, String content)
-    {
-        try
-        {
-            File file = new File(path);
-            file.createNewFile();
-            OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file, false));
-            writer.append(content);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void toast(@StringRes int msgId)
-    {
-        toast(getString(msgId));
-    }
-
-    public void toast(String msg)
-    {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 }
