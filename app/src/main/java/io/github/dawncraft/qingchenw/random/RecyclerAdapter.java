@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -44,7 +45,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
         holder.nameText.setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public void onClick(View view)
+            public void onClick(final View view)
             {
                 final EditText editText = new EditText(view.getContext());
                 editText.setHint("更改该元素名字");
@@ -57,7 +58,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
                     public void onClick(DialogInterface dialog, int which)
                     {
                         changeItem(holder.getLayoutPosition(), editText.getText().toString());
-                        ListActivity.saveConfig();
+                        ListActivity.savePreferences(PreferenceManager.getDefaultSharedPreferences(view.getContext()));
                     }
                 });
                 builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
@@ -195,7 +196,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
         }
 
         @Override
-        public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)
+        public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder)
         {
             ((RecyclerAdapter.Holder) viewHolder).clear();
             super.clearView(recyclerView, viewHolder);

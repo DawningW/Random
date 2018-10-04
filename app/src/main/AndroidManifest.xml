@@ -28,7 +28,7 @@
         </activity>
         <activity
             android:name=".ListActivity"
-            android:label="@string/list_edit"
+            android:label="@string/list"
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -36,7 +36,23 @@
         </activity>
         <activity
             android:name=".VoiceActivity"
-            android:label="@string/voice_edit"
+            android:label="@string/voice"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
+        </activity>
+        <activity
+            android:name=".CodeActivity"
+            android:label="@string/settings"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
+        </activity>
+        <activity
+            android:name=".AboutActivity"
+            android:label="@string/about"
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

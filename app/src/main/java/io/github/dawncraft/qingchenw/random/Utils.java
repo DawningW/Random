@@ -2,6 +2,7 @@ package io.github.dawncraft.qingchenw.random;
 
 import android.content.Context;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.widget.Toast;
 
@@ -14,22 +15,27 @@ import java.io.OutputStreamWriter;
 
 public class Utils
 {
+    @NonNull
     public static String join(CharSequence delimiter, String... elements)
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        if (elements.length > 0)
         {
-            return String.join(delimiter, elements);
-        }
-        else
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-            for(int i = 0; i < elements.length - 1; i++)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             {
-                stringBuilder.append(elements[i]).append(delimiter);
+                return String.join(delimiter, elements);
             }
-            stringBuilder.append(elements.length - 1);
-            return stringBuilder.toString();
+            else
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                for(int i = 0; i < elements.length - 1; i++)
+                {
+                    stringBuilder.append(elements[i]).append(delimiter);
+                }
+                stringBuilder.append(elements.length - 1);
+                return stringBuilder.toString();
+            }
         }
+        return "";
     }
 
     public static String readFile(String path)

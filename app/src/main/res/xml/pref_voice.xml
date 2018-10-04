@@ -1,19 +1,90 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <EditTextPreference
-
-        android:key="voice_text"
-        android:title="更改朗读文本"
-        android:defaultValue="请 %s 号同学回答问题"
-        android:inputType="textCapWords"
-        android:capitalize="words"
-        android:maxLines="1"
-        android:singleLine="true"
-        android:selectAllOnFocus="true" />
-
-    <SwitchPreference
-        android:key="example_switch"
-        android:title="开关示例"
-        android:summary="这是一个开关"
-        android:defaultValue="true" />
-
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory android:title="@string/voice_pref_voice">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="voice_switch"
+            android:title="@string/voice_pref_voice_switch" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dependency="voice_switch"
+            android:entries="@array/voice_pref_voice_mode_list"
+            android:entryValues="@array/value_list"
+            android:key="voice_mode"
+            android:title="@string/voice_pref_voice_mode" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dependency="voice_switch"
+            android:entries="@array/voice_pref_voice_network_list"
+            android:entryValues="@array/value_list"
+            android:key="voice_network"
+            android:title="@string/voice_pref_voice_network" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dependency="voice_switch"
+            android:entries="@array/voice_pref_voice_overtime_list"
+            android:entryValues="@array/value_list"
+            android:key="voice_overtime"
+            android:title="@string/voice_pref_voice_overtime" />
+        <ListPreference
+            android:defaultValue="0"
+            android:dependency="voice_switch"
+            android:entries="@array/voice_pref_voice_speaker_list"
+            android:entryValues="@array/value_list"
+            android:key="voice_speaker"
+            android:title="@string/voice_pref_voice_speaker" />
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="@string/voice_text_default"
+            android:dependency="voice_switch"
+            android:inputType="textCapWords"
+            android:key="voice_text"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/voice_pref_voice_text" />
+        <io.github.dawncraft.qingchenw.random.SeekBarPreference
+            android:defaultValue="5"
+            android:dependency="voice_switch"
+            android:key="voice_volume"
+            app:maxValue="15"
+            app:minValue="0"
+            android:title="@string/voice_pref_voice_volume" />
+        <io.github.dawncraft.qingchenw.random.SeekBarPreference
+            android:defaultValue="5"
+            android:dependency="voice_switch"
+            android:key="voice_speed"
+            app:maxValue="15"
+            app:minValue="0"
+            android:title="@string/voice_pref_voice_speed" />
+        <io.github.dawncraft.qingchenw.random.SeekBarPreference
+            android:defaultValue="5"
+            android:dependency="voice_switch"
+            android:key="voice_pitch"
+            app:maxValue="15"
+            app:minValue="0"
+            android:title="@string/voice_pref_voice_pitch" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/voice_pref_sound">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="sound_switch"
+            android:title="@string/voice_pref_sound_switch" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/voice_pref_vibrator">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="vibrator_switch"
+            android:title="@string/voice_pref_vibrator_switch" />
+        <io.github.dawncraft.qingchenw.random.IntEditTextPreference
+            android:defaultValue="300"
+            android:dependency="vibrator_switch"
+            android:inputType="numberSigned"
+            android:key="vibrator_time"
+            android:numeric="integer"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:title="@string/voice_pref_vibrator_time" />
+    </PreferenceCategory>
 </PreferenceScreen>

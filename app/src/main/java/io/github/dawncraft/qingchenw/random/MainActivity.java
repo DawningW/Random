@@ -1,8 +1,11 @@
 package io.github.dawncraft.qingchenw.random;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -12,7 +15,10 @@ import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.animation.Animation;
@@ -22,12 +28,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baidu.tts.client.SpeechError;
+import com.baidu.tts.client.SpeechSynthesizer;
 import com.baidu.tts.client.SpeechSynthesizerListener;
 import com.baidu.tts.client.TtsMode;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import butterknife.BindAnim;
+import butterknife.BindDrawable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -43,12 +54,27 @@ import static java.lang.System.currentTimeMillis;
  */
 public class MainActivity extends AppCompatActivity implements SensorEventListener, SpeechSynthesizerListener
 {
-    public static final int sensitivity = 20;
+    // 权限
+    public static final String PERMISSIONS[] = {
+            Manifest.permission.INTERNET,
+            Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_SETTINGS,
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.CHANGE_WIFI_STATE
+    };
+    // 灵敏度
+    public static final int SENSITIVITY = 20;
+
+    // 退出计时器
     private long exitTime = 0;
+    // 正在摇晃判断
     private boolean isShaking = false;
 
     // 配置
-    public static SharedPreferences sharedPreferences;
+    public SharedPreferences sharedPreferences;
     // 传感器
     public SensorManager sensorManager;
     // 振动
@@ -56,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // 音效池
     public SoundPool soundPool;
     // 百度语音合成引擎
-    public MySynthesizer.Config synthesizerConfig;
     public MySynthesizer speechSynthesizer;
 
     // 顶部布局
@@ -91,6 +116,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @BindAnim(R.anim.anim_back_down)
     public Animation backDownAnim;
 
+    // 图片
+    @BindDrawable(R.drawable.ic_circle_grey_24dp)
+    public Drawable greyImage;
+    @BindDrawable(R.drawable.ic_circle_green_24dp)
+    public Drawable greenImage;
+    @BindDrawable(R.drawable.ic_circle_yellow_24dp)
+    public Drawable yellowImage;
+    @BindDrawable(R.drawable.ic_circle_red_24dp)
+    public Drawable redImage;
+
     // 音效
     public int openAudio;
     public int closeAudio;
@@ -105,20 +140,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ButterKnife.bind(this);
         // 初始化配置
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        // TODO 初始化其他activity的配置
-        ListActivity.loadConfig(sharedPreferences);
-        VoiceActivity.loadConfig(sharedPreferences);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_voice, true);
+        ListActivity.loadPreferences(sharedPreferences);
+        VoiceActivity.reloadPreferences(sharedPreferences);
         // 初始化控件
         listText.setText(String.format(getString(R.string.list_number),
                 String.valueOf(ListActivity.elements.size())));
         voiceText.setText(String.format(getString(R.string.voice_text),
                 VoiceActivity.text));
+        stateImage.setImageDrawable(greenImage); // TODO 语音合成引擎状态显示
     }
 
     @Override
     protected void onStart()
     {
         super.onStart();
+        // 申请权限
+        initPermission();
         // 获取传感器管理器
         sensorManager = ((SensorManager) getSystemService(SENSOR_SERVICE));
         if (sensorManager != null)
@@ -138,10 +176,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         openAudio = soundPool.load(this, R.raw.open,1);
         closeAudio = soundPool.load(this, R.raw.close, 1);
         // 初始化语音合成引擎
-        synthesizerConfig = new MySynthesizer.Config("11443617",
-                "iNmAH7IzeHm2HT6eNmYIu5OF",
-                "yv3LkAYkrc6Gw32IG1UB12WB lwY5AheX",
-                TtsMode.MIX, null, MainActivity.this);
         speechSynthesizer = new MySynthesizer(this);
         Thread thread = new Thread()
         {
@@ -149,9 +183,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void run()
             {
                 super.run();
+                Map<String, String> params = new HashMap<>();
+                params.put(SpeechSynthesizer.PARAM_MIX_MODE, VoiceActivity.mixMode);
+                params.put(SpeechSynthesizer.PARAM_SPEAKER, VoiceActivity.speaker);
+                params.put(SpeechSynthesizer.PARAM_VOLUME, String.valueOf(VoiceActivity.volume));
+                params.put(SpeechSynthesizer.PARAM_SPEED, String.valueOf(VoiceActivity.speed));
+                params.put(SpeechSynthesizer.PARAM_PITCH, String.valueOf(VoiceActivity.pitch));
+                MySynthesizer.Config synthesizerConfig = new MySynthesizer.Config("11443617",
+                        "iNmAH7IzeHm2HT6eNmYIu5OF",
+                        "yv3LkAYkrc6Gw32IG1UB12WBlwY5AheX",
+                        TtsMode.MIX, params, MainActivity.this);
                 speechSynthesizer.init(synthesizerConfig);
-                // 测试
-                speechSynthesizer.speak("语音合成引擎已成功加载");
             }
         };
         thread.start();
@@ -160,6 +202,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onPause()
     {
+        super.onPause();
         // 停止动画
         if(isShaking)
         {
@@ -176,9 +219,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (speechSynthesizer != null)
         {
             speechSynthesizer.stop();
-            speechSynthesizer.release();
+            // speechSynthesizer.release(); // FIXME 有时会在start前被调用
         }
-        super.onPause();
     }
 
     @Override
@@ -191,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // 获取三个方向值
             for (float value : sensorEvent.values)
             {
-                if (Math.abs(value) > sensitivity)
+                if (Math.abs(value) > SENSITIVITY)
                 {
                     start();
                     break;
@@ -213,7 +255,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSynthesizeFinish(String s) {}
 
     @Override
-    public void onSpeechStart(String s) {}
+    public void onSpeechStart(String s)
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                stateImage.setImageDrawable(yellowImage);
+            }
+        });
+    }
 
     @Override
     public void onSpeechProgressChanged(String s, int i) {}
@@ -221,21 +273,56 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSpeechFinish(String s)
     {
-        this.runOnUiThread(new Runnable()
+        runOnUiThread(new Runnable()
         {
             @Override
             public void run()
             {
-                stop();
+                stateImage.setImageDrawable(greenImage);
+                if(isShaking)
+                {
+                    stop();
+                }
             }
         });
     }
 
     @Override
-    public void onError(String s, SpeechError speechError)
+    public void onError(String s, final SpeechError speechError)
     {
-        Utils.toast(this, "合成语音播放错误: " + speechError.toString(), Toast.LENGTH_LONG);
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                stateImage.setImageDrawable(redImage);
+                Utils.toast(MainActivity.this,
+                        "合成语音播放错误: " + speechError.toString(), Toast.LENGTH_LONG);
+            }
+        });
     }
+
+    /**
+     * android 6.0 以上需要动态申请权限
+     */
+    private void initPermission()
+    {
+        ArrayList<String> toApplyList = new ArrayList<>();
+        for (String permission : PERMISSIONS)
+        {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED)
+            {
+                toApplyList.add(permission);
+            }
+        }
+        if (!toApplyList.isEmpty())
+        {
+            ActivityCompat.requestPermissions(this, toApplyList.toArray(new String[]{}), 0);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {}
 
     @Override
     public void onBackPressed()
@@ -278,10 +365,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             case R.id.settingButton:
             {
+                startActivity(new Intent(this, CodeActivity.class));
                 break;
             }
             case R.id.helpButton:
             {
+                startActivity(new Intent(this, AboutActivity.class));
                 break;
             }
         }
@@ -306,12 +395,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // 播放动画
             topLayout.startAnimation(goUpAnim);
             bottomLayout.startAnimation(goDownAnim);
-            // 发出振动
-            vibrator.vibrate(300);
             // 播放提示音
-            soundPool.play(openAudio, 1, 1, 0, 0, 1);
+            if(VoiceActivity.soundEnabled)
+                soundPool.play(openAudio, 1, 1, 0, 0, 1);
+            // 发出振动
+            if(VoiceActivity.vibratorEnabled)
+                vibrator.vibrate(VoiceActivity.vibrateTime);
             // 播放语音
-            speechSynthesizer.speak(text, "number");
+            if(VoiceActivity.voiceEnabled)
+                speechSynthesizer.speak(text, "");
         }
         else
         {
@@ -328,7 +420,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         topLayout.startAnimation(backUpAnim);
         bottomLayout.startAnimation(backDownAnim);
         // 播放提示音
-        soundPool.play(closeAudio, 1, 1, 0, 0, 1);
+        if(VoiceActivity.soundEnabled)
+            soundPool.play(closeAudio, 1, 1, 0, 0, 1);
         // 延时执行
         imageButton.postDelayed(new Runnable()
         {

@@ -32,7 +32,7 @@ public class MySynthesizer
         init(config);
     }
 
-    protected MySynthesizer(Context context)
+    public MySynthesizer(Context context)
     {
         if (isInitied)
         {
@@ -129,6 +129,16 @@ public class MySynthesizer
         speechSynthesizer.release();
         speechSynthesizer = null;
         isInitied = false;
+    }
+
+    /**
+     * 设置参数
+     *
+     * @return
+     */
+    public int setParam(String key, String value)
+    {
+        return speechSynthesizer.setParam(key, value);
     }
 
     /**
