@@ -23,6 +23,7 @@
         android:id="@+id/topLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:elevation="1dp"
         android:background="@android:color/holo_blue_light"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
@@ -78,6 +79,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
                 android:background="@drawable/bg_corner"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
@@ -109,47 +111,6 @@
                     android:textSize="16sp" />
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/linearLayout3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_corner"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                tools:ignore="ButtonStyle">
-
-                <Button
-                    android:id="@+id/settingButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginBottom="4dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/ic_corner"
-                    android:onClick="onClicked"
-                    android:text="@string/settings"
-                    android:textSize="18sp" />
-
-                <Button
-                    android:id="@+id/helpButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginBottom="4dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/ic_corner"
-                    android:onClick="onClicked"
-                    android:text="@string/about"
-                    android:textSize="18sp" />
-
-            </LinearLayout>
         </LinearLayout>
 
         <View
@@ -178,6 +139,7 @@
         android:id="@+id/bottomLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:elevation="1dp"
         android:background="@android:color/holo_blue_light"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -261,6 +223,7 @@
         android:padding="10dp"
         android:scaleType="fitCenter"
         android:tint="@android:color/black"
+        android:elevation="3dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

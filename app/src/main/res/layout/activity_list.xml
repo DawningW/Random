@@ -23,9 +23,10 @@
         android:id="@+id/menuLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="104dp"
         android:layout_marginEnd="24dp"
+        android:layout_marginBottom="104dp"
         android:background="@android:color/background_light"
+        android:elevation="2dp"
         android:orientation="vertical"
         android:padding="4dp"
         android:visibility="gone"
@@ -41,9 +42,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="14dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="14dp"
+                android:layout_marginEnd="14dp"
                 android:layout_weight="1"
                 android:text="@string/list_menu_add" />
 
@@ -71,9 +72,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="14dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="14dp"
+                android:layout_marginEnd="14dp"
                 android:layout_weight="1"
                 android:text="@string/list_menu_addmany" />
 
@@ -101,9 +102,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="14dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="14dp"
+                android:layout_marginEnd="14dp"
                 android:layout_weight="1"
                 android:text="@string/list_menu_read" />
 
@@ -131,9 +132,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="14dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="14dp"
+                android:layout_marginEnd="14dp"
                 android:layout_weight="1"
                 android:text="@string/list_menu_save" />
 
@@ -161,9 +162,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="14dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="14dp"
+                android:layout_marginEnd="14dp"
                 android:layout_weight="1"
                 android:text="@string/list_menu_clear" />
 

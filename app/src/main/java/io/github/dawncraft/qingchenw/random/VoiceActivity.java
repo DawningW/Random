@@ -1,33 +1,12 @@
 package io.github.dawncraft.qingchenw.random;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 
-import com.baidu.tts.client.SpeechSynthesizer;
-import com.baidu.tts.client.TtsMode;
-
-public class VoiceActivity extends AppCompatActivity
+public class VoiceActivity extends AppCompatPreferenceActivity
 {
-    public static boolean voiceEnabled;
-    public static TtsMode ttsMode;
-    public static String mixMode;
-    public static String speaker;
-    public static String text;
-    public static int volume;
-    public static int speed;
-    public static int pitch;
-    public static boolean soundEnabled;
-    public static boolean vibratorEnabled;
-    public static long vibrateTime;
-
-    // 配置
-    public SharedPreferences sharedPreferences;
-
     private static final Preference.OnPreferenceChangeListener preferenceBindingListener = new Preference.OnPreferenceChangeListener()
     {
         @Override
@@ -50,81 +29,33 @@ public class VoiceActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        getFragmentManager().beginTransaction()
-                .replace(android.R.id.content, new SettingsFragment())
-                .commit();
         if (getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        // 初始化配置
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        reloadPreferences(sharedPreferences);
+        addPreferencesFromResource(R.xml.pref_voice);
+        bindPreferenceSummaryToStrValue(findPreference("voice_speaker"));
+        bindPreferenceSummaryToStrValue(findPreference("voice_text"));
+        bindPreferenceSummaryToIntValue(findPreference("vibrator_time"));
     }
 
-    @Override
-    protected void onDestroy()
+    public static void bindPreferenceSummaryToStrValue(Preference preference)
     {
-        // 重载配置
-        reloadPreferences(sharedPreferences);
-        super.onDestroy();
+        // Set the listener to watch for value changes.
+        preference.setOnPreferenceChangeListener(preferenceBindingListener);
+        // Trigger the listener immediately with the preference's current value.
+        preferenceBindingListener.onPreferenceChange(preference,
+                PreferenceManager
+                        .getDefaultSharedPreferences(preference.getContext())
+                        .getString(preference.getKey(), ""));
     }
 
-    public static void reloadPreferences(SharedPreferences preferences)
+    public static void bindPreferenceSummaryToIntValue(Preference preference)
     {
-        voiceEnabled = preferences.getBoolean("voice_switch", true);
-        String tts = preferences.getString("voice_mode", "0");
-        switch (tts)
-        {
-            default:
-            case "0": ttsMode = TtsMode.MIX; break;
-            case "1": ttsMode = TtsMode.ONLINE; break;
-        }
-        String net = preferences.getString("voice_network", "0");
-        String time = preferences.getString("voice_overtime", "0");
-        if (net.equals("0"))
-        {
-            if (time.equals("0"))
-            {
-                mixMode = SpeechSynthesizer.MIX_MODE_HIGH_SPEED_SYNTHESIZE_WIFI;
-            }
-            else
-            {
-                mixMode = SpeechSynthesizer.MIX_MODE_DEFAULT;
-            }
-        }
-        else
-        {
-            if (time.equals("0"))
-            {
-                mixMode = SpeechSynthesizer.MIX_MODE_HIGH_SPEED_SYNTHESIZE;
-            }
-            else
-            {
-                mixMode = SpeechSynthesizer.MIX_MODE_HIGH_SPEED_NETWORK;
-            }
-        }
-        speaker = preferences.getString("voice_speaker", "0");
-        text = preferences.getString("voice_text", "请 %s 号同学回答问题");
-        volume = preferences.getInt("voice_volume", 5);
-        speed = preferences.getInt("voice_speed", 5);
-        pitch = preferences.getInt("voice_pitch", 5);
-        soundEnabled = preferences.getBoolean("sound_switch", true);
-        vibratorEnabled = preferences.getBoolean("vibrator_switch", true);
-        vibrateTime = preferences.getInt("vibrator_time", 300);
-    }
-
-    public static class SettingsFragment extends PreferenceFragment
-    {
-        @Override
-        public void onCreate(Bundle paramBundle)
-        {
-            super.onCreate(paramBundle);
-            addPreferencesFromResource(R.xml.pref_voice);
-            findPreference("voice_mode").setOnPreferenceChangeListener(preferenceBindingListener);
-            findPreference("voice_network").setOnPreferenceChangeListener(preferenceBindingListener);
-            findPreference("voice_overtime").setOnPreferenceChangeListener(preferenceBindingListener);
-            findPreference("voice_speaker").setOnPreferenceChangeListener(preferenceBindingListener);
-            findPreference("voice_text").setOnPreferenceChangeListener(preferenceBindingListener);
-            findPreference("vibrator_time").setOnPreferenceChangeListener(preferenceBindingListener);
-        }
+        // Set the listener to watch for value changes.
+        preference.setOnPreferenceChangeListener(preferenceBindingListener);
+        // Trigger the listener immediately with the preference's current value.
+        preferenceBindingListener.onPreferenceChange(preference,
+                PreferenceManager
+                        .getDefaultSharedPreferences(preference.getContext())
+                        .getInt(preference.getKey(), 0));
     }
 }

@@ -21,9 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import butterknife.BindAnim;
 import butterknife.BindView;
@@ -34,11 +32,6 @@ public class ListActivity extends AppCompatActivity
     // 分隔符
     public static final CharSequence DELIMITER = ",";
 
-    // 元素列表
-    public static List<String> elements = new ArrayList<>();
-
-    // 配置
-    public SharedPreferences sharedPreferences;
     // 适配器
     public RecyclerAdapter recyclerAdapter;
     // 触摸
@@ -67,15 +60,12 @@ public class ListActivity extends AppCompatActivity
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // 初始化ButterKnife
         ButterKnife.bind(this);
-        // 初始化配置
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        loadPreferences(sharedPreferences);
         // 初始化布局
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(manager);
         // 初始化适配器
-        recyclerAdapter = new RecyclerAdapter(this, elements);
+        recyclerAdapter = new RecyclerAdapter(this, MainActivity.elements);
         recyclerView.setAdapter(recyclerAdapter);
         // 初始化触摸
         itemTouchHelper = new ItemTouchHelper(new RecyclerAdapter.Callback());
@@ -83,12 +73,27 @@ public class ListActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onDestroy()
+    protected void onPause()
     {
-        // 保存配置
-        savePreferences(sharedPreferences);
-        loadPreferences(sharedPreferences);
-        super.onDestroy();
+        super.onPause();
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        editor.putString("elements", Utils.join(DELIMITER, MainActivity.elements.toArray(new String[]{})));
+        editor.apply();
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        if(menuLayout.getVisibility() == View.VISIBLE)
+        {
+            menuLayout.setVisibility(View.GONE);
+            // 隐藏菜单
+            menuLayout.startAnimation(dismissMenuAnim);
+        }
+        else
+        {
+            super.onBackPressed();
+        }
     }
 
     public void onClicked(View view)
@@ -144,7 +149,6 @@ public class ListActivity extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which)
             {
                 recyclerAdapter.insertItem(recyclerAdapter.getItemCount(), editText.getText().toString());
-                savePreferences(sharedPreferences);
             }
         });
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
@@ -178,9 +182,8 @@ public class ListActivity extends AppCompatActivity
                 int num = Integer.valueOf(editText.getText().toString());
                 if(num > 0 && num < Integer.MAX_VALUE)
                 {
-                    recyclerAdapter.insertItemRange(recyclerAdapter.getItemCount(),
+                    recyclerAdapter.insertItemRange(recyclerAdapter.getItemCount() + 1,
                             recyclerAdapter.getItemCount() + num);
-                    savePreferences(sharedPreferences);
                 }
                 else
                 {
@@ -222,12 +225,11 @@ public class ListActivity extends AppCompatActivity
                 String str = Utils.readFile(editText.getText().toString());
                 if(str != null)
                 {
-                    String[] strArray = str.split(",");
+                    String[] strArray = str.split(String.valueOf(DELIMITER));
                     if(strArray.length > 0)
                     {
                         if(checkBox.isChecked()) recyclerAdapter.clearItem();
-                        Collections.addAll(elements, strArray);
-                        savePreferences(sharedPreferences);
+                        Collections.addAll(MainActivity.elements, strArray);
                         return;
                     }
                 }
@@ -268,7 +270,7 @@ public class ListActivity extends AppCompatActivity
                 String path = editText.getText().toString();
                 if(!new File(path).exists() || checkBox.isChecked())
                 {
-                    Utils.writeFile(path, Utils.join(",", elements.toArray(new String[]{})));
+                    Utils.writeFile(path, Utils.join(DELIMITER, MainActivity.elements.toArray(new String[]{})));
                     return;
                 }
                 Utils.toast(ListActivity.this,"无法写入文件,可能是文件已存在");
@@ -300,7 +302,6 @@ public class ListActivity extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which)
             {
                 recyclerAdapter.clearItem();
-                savePreferences(sharedPreferences);
             }
         });
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
@@ -315,22 +316,5 @@ public class ListActivity extends AppCompatActivity
         dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         dialog.show();
-    }
-
-    public static void loadPreferences(SharedPreferences preferences)
-    {
-        elements.clear();
-        String toSplit = preferences.getString("elements", "");
-        if (!toSplit.equals(""))
-        {
-            Collections.addAll(elements, toSplit.split(String.valueOf(DELIMITER)));
-        }
-    }
-
-    public static void savePreferences(SharedPreferences preferences)
-    {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("elements", Utils.join(DELIMITER, elements.toArray(new String[]{})));
-        editor.apply();
     }
 }

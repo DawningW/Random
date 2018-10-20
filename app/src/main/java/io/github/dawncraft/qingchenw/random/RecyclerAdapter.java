@@ -58,7 +58,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
                     public void onClick(DialogInterface dialog, int which)
                     {
                         changeItem(holder.getLayoutPosition(), editText.getText().toString());
-                        ListActivity.savePreferences(PreferenceManager.getDefaultSharedPreferences(view.getContext()));
                     }
                 });
                 builder.setNegativeButton("取消", new DialogInterface.OnClickListener()

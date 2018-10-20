@@ -2,7 +2,9 @@ package io.github.dawncraft.qingchenw.random;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Parcelable;
 import android.preference.Preference;
+import android.support.v4.app.Fragment;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.SeekBar;
@@ -37,11 +39,11 @@ public class SeekBarPreference extends Preference implements SeekBar.OnSeekBarCh
 
         mSeekBar = view.findViewById(R.id.seekBar);
         mSeekBar.setMax(mMaxValue - mMinValue);
-        mSeekBar.setProgress(mDefaultValue - mMinValue);
+        mSeekBar.setProgress(mCurrentValue - mMinValue);
         mSeekBar.setOnSeekBarChangeListener(this);
 
         mCurrentValueText = view.findViewById(R.id.currentValue);
-        mCurrentValueText.setText(String.valueOf(mDefaultValue));
+        mCurrentValueText.setText(String.valueOf(mCurrentValue));
 
         TextView leftText = view.findViewById(R.id.maxValue);
         leftText.setText(String.valueOf(mMaxValue));
@@ -51,25 +53,25 @@ public class SeekBarPreference extends Preference implements SeekBar.OnSeekBarCh
     }
 
     @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {}
+
+    @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
     {
         int newValue = progress + mMinValue;
-        if(newValue > mMaxValue) newValue = mMaxValue;
-        else if(newValue < mMinValue) newValue = mMinValue;
+        if (newValue > mMaxValue) newValue = mMaxValue;
+        else if (newValue < mMinValue) newValue = mMinValue;
         callChangeListener(newValue);
         mCurrentValue = newValue;
-        seekBar.setProgress(mCurrentValue - mMinValue);
+        seekBar.setProgress(newValue - mMinValue);
         mCurrentValueText.setText(String.valueOf(newValue));
         persistInt(newValue);
     }
 
     @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {}
-
-    @Override
     public void onStopTrackingTouch(SeekBar seekBar)
     {
-        notifyChanged();
+        // notifyChanged();
     }
 
     @Override
@@ -81,7 +83,7 @@ public class SeekBarPreference extends Preference implements SeekBar.OnSeekBarCh
     @Override
     protected void onSetInitialValue(boolean restoreValue, Object defaultValue)
     {
-        if(restoreValue)
+        if (restoreValue)
         {
             mCurrentValue = getPersistedInt(mDefaultValue);
         }
@@ -129,7 +131,10 @@ public class SeekBarPreference extends Preference implements SeekBar.OnSeekBarCh
 
     public void setCurrentValue(int value)
     {
-        this.mCurrentValue = value;
-        mSeekBar.setProgress(mCurrentValue - mMinValue);
+        mCurrentValue = value;
+        int newValue = mCurrentValue - mMinValue;
+        mSeekBar.setProgress(newValue);
+        persistInt(newValue);
+        notifyChanged();
     }
 }

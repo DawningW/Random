@@ -3,29 +3,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory android:title="@string/voice_pref_voice">
         <SwitchPreference
+            android:layout_height="wrap_content"
             android:defaultValue="true"
             android:key="voice_switch"
             android:title="@string/voice_pref_voice_switch" />
-        <ListPreference
-            android:defaultValue="0"
+        <SwitchPreference
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
             android:dependency="voice_switch"
-            android:entries="@array/voice_pref_voice_mode_list"
-            android:entryValues="@array/value_list"
             android:key="voice_mode"
+            android:summary="@string/voice_pref_voice_mode_summary"
             android:title="@string/voice_pref_voice_mode" />
-        <ListPreference
-            android:defaultValue="0"
+        <SwitchPreference
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
             android:dependency="voice_switch"
-            android:entries="@array/voice_pref_voice_network_list"
-            android:entryValues="@array/value_list"
             android:key="voice_network"
+            android:summary="@string/voice_pref_voice_network_summary"
             android:title="@string/voice_pref_voice_network" />
-        <ListPreference
-            android:defaultValue="0"
+        <SwitchPreference
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
             android:dependency="voice_switch"
-            android:entries="@array/voice_pref_voice_overtime_list"
-            android:entryValues="@array/value_list"
             android:key="voice_overtime"
+            android:summary="@string/voice_pref_voice_overtime_summary"
             android:title="@string/voice_pref_voice_overtime" />
         <ListPreference
             android:defaultValue="0"
@@ -48,23 +49,23 @@
             android:defaultValue="5"
             android:dependency="voice_switch"
             android:key="voice_volume"
+            android:title="@string/voice_pref_voice_volume"
             app:maxValue="15"
-            app:minValue="0"
-            android:title="@string/voice_pref_voice_volume" />
+            app:minValue="0" />
         <io.github.dawncraft.qingchenw.random.SeekBarPreference
             android:defaultValue="5"
             android:dependency="voice_switch"
             android:key="voice_speed"
+            android:title="@string/voice_pref_voice_speed"
             app:maxValue="15"
-            app:minValue="0"
-            android:title="@string/voice_pref_voice_speed" />
+            app:minValue="0" />
         <io.github.dawncraft.qingchenw.random.SeekBarPreference
             android:defaultValue="5"
             android:dependency="voice_switch"
             android:key="voice_pitch"
+            android:title="@string/voice_pref_voice_pitch"
             app:maxValue="15"
-            app:minValue="0"
-            android:title="@string/voice_pref_voice_pitch" />
+            app:minValue="0" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/voice_pref_sound">
         <SwitchPreference

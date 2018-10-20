@@ -13,27 +13,19 @@
     <string name="list_menu_read">从文件读取</string>
     <string name="list_menu_addmany">批量添加序号</string>
     <string name="list_blank">请先向集合中添加元素</string>
+    <string name="no_storage_permission">你必须同意存储权限才能使用存储功能</string>
     <string name="voice">语音</string>
     <string name="voice_text">朗读文本: %s</string>
     <string name="voice_text_default">请 %s 号同学回答问题</string>
     <string name="voice_edit">编辑语音</string>
     <string name="voice_pref_voice">语音合成设置</string>
     <string name="voice_pref_voice_switch">是否开启播报</string>
-    <string name="voice_pref_voice_mode">语音合成模式</string>
-    <string-array name="voice_pref_voice_mode_list">
-        <item>离在线混合</item>
-        <item>在线</item>
-    </string-array>
-    <string name="voice_pref_voice_network">在什么网络环境下在线合成</string>
-    <string-array name="voice_pref_voice_network_list">
-        <item>仅WIFI</item>
-        <item>WIFI和移动数据</item>
-    </string-array>
-    <string name="voice_pref_voice_overtime">连接服务器超时自动切换至离线合成</string>
-    <string-array name="voice_pref_voice_overtime_list">
-        <item>1.2秒</item>
-        <item>6秒</item>
-    </string-array>
+    <string name="voice_pref_voice_mode">使用离线合成</string>
+    <string name="voice_pref_voice_mode_summary">开启离在线混合,可能需要下载额外数据</string>
+    <string name="voice_pref_voice_network">移动数据下在线合成</string>
+    <string name="voice_pref_voice_network_summary">开启后可能会产生流量费用</string>
+    <string name="voice_pref_voice_overtime">允许超时</string>
+    <string name="voice_pref_voice_overtime_summary">默认1.2秒无回应视为超时,开启后变为6秒</string>
     <string name="voice_pref_voice_speaker">更换发音人</string>
     <string-array name="voice_pref_voice_speaker_list">
         <item>普通女声</item>
@@ -51,6 +43,14 @@
     <string name="voice_pref_vibrator">震动设置</string>
     <string name="voice_pref_vibrator_switch">是否开启震动效果</string>
     <string name="voice_pref_vibrator_time">震动持续时间(毫秒)</string>
-    <string name="settings">更多设置</string>
+    <string name="code">随机算法</string>
+    <string name="update">检查更新</string>
+    <string name="have_update">发现新版本</string>
+    <string name="no_update">当前已是最新版本</string>
+    <string name="download">下载新版本</string>
+    <string name="download_update">正在下载更新，请稍等片刻。</string>
+    <string name="help">帮助</string>
     <string name="about">关于</string>
+    <string name="view_license">阅读源代码开放许可</string>
+
 </resources>

@@ -1,11 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".CodeActivity">
 
-</android.support.constraint.ConstraintLayout>
+    <Switch
+        android:id="@+id/codeSwitch"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="0"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="是否使用伪随机算法"
+        android:textSize="18sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="随机算法使用JavaScript编写,在下方直接写代码即可,参数列表:list, range, result"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/codeEditor"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_weight="1"
+        android:ems="10"
+        android:fontFamily="monospace"
+        android:gravity="top"
+        android:hint="直接写代码即可,参数列表:list, range, result"
+        android:inputType="textMultiLine" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_weight="0"
+        android:background="@color/colorDivider" />
+
+    <LinearLayout
+        android:id="@+id/codeButtonBar"
+        style="?attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_weight="0"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/codeCheckButton"
+            style="?attr/buttonBarButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:onClick="onClicked"
+            android:text="检查语法" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0"
+            android:background="@color/colorDivider" />
+
+        <Button
+            android:id="@+id/codeSaveButton"
+            style="?attr/buttonBarButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:onClick="onClicked"
+            android:text="保存代码" />
+
+    </LinearLayout>
+</LinearLayout>
