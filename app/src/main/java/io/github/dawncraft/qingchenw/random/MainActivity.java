@@ -401,7 +401,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 {
                     if (grantResults[i] == PackageManager.PERMISSION_DENIED)
                     {
-                        if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[i]))
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[i]))
                         {
                             Utils.toast(this, R.string.no_storage_permission, Toast.LENGTH_LONG);
                             ActivityCompat.requestPermissions(this, new String[] {permissions[i]}, REQUEST_CODE);
