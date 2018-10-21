@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.view.MenuItem;
 
 public class VoiceActivity extends AppCompatPreferenceActivity
 {
@@ -35,6 +36,20 @@ public class VoiceActivity extends AppCompatPreferenceActivity
         bindPreferenceSummaryToStrValue(findPreference("voice_speaker"));
         bindPreferenceSummaryToStrValue(findPreference("voice_text"));
         bindPreferenceSummaryToIntValue(findPreference("vibrator_time"));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            // 返回键的id
+            case android.R.id.home:
+                this.finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     public static void bindPreferenceSummaryToStrValue(Preference preference)

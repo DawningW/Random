@@ -588,6 +588,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dialog.setTitle(R.string.download);
         dialog.setMessage(getString(R.string.download_update));
         dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
         dialog.show();
         new Thread()
         {
@@ -596,8 +598,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             {
                 try
                 {
+                    // 更新地址
+                    String apkUrl = update.getString("updateUrl");
                     // 下载APK
-                    File file = Utils.downloadFile(UPDATE_URL, VOICE_RES_PATH, dialog);
+                    File file = Utils.downloadFile(apkUrl, VOICE_RES_PATH, dialog);
                     // 安装APK
                     Intent intent = new Intent();
                     intent.setAction(Intent.ACTION_VIEW);

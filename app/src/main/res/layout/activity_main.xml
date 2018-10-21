@@ -223,7 +223,7 @@
         android:padding="10dp"
         android:scaleType="fitCenter"
         android:tint="@android:color/black"
-        android:elevation="3dp"
+        android:elevation="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
