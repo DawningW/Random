@@ -2,7 +2,7 @@
     "name": "Random",
     "versionName": "1.5",
     "versionCode": 6,
-    "updateUrl": "https://raw.githubusercontent.com/DawningW/Random/master/app-release.apk",
+    "updateUrl": "https://github.com/DawningW/Random/releases/download/1.5/app-release.apk",
     "md5": "bff09c2ffb58bed504736cac0b55db1d",
     "description": "1.增加文件选择器2.修复更新"
 }
