@@ -1,8 +1,12 @@
 package io.github.dawncraft.qingchenw.random;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -15,6 +19,7 @@ import android.text.InputType;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -31,6 +36,8 @@ public class ListActivity extends AppCompatActivity
 {
     // 分隔符
     public static final CharSequence DELIMITER = ",";
+    // 选择文件的请求代码
+    public static final int FILE_SELECT_CODE = 1;
 
     // 适配器
     public RecyclerAdapter recyclerAdapter;
@@ -82,6 +89,26 @@ public class ListActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        switch (requestCode)
+        {
+            case FILE_SELECT_CODE:
+            {
+                if (resultCode == Activity.RESULT_OK)
+                {
+                    Uri uri = data.getData();
+                    if (uri != null)
+                    {
+                        String path = Utils.getPath(this, uri);
+                        readFloatButton(path);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
     public void onBackPressed()
     {
         if(menuLayout.getVisibility() == View.VISIBLE)
@@ -110,7 +137,7 @@ public class ListActivity extends AppCompatActivity
                 inputNumberDialog();
                 break;
             case R.id.readFloatButton:
-                readFloatButton();
+                readFloatButton("");
                 break;
             case R.id.saveFloatButton:
                 saveFloatButton();
@@ -205,13 +232,17 @@ public class ListActivity extends AppCompatActivity
         dialog.show();
     }
 
-    public void readFloatButton()
+    public void readFloatButton(String path)
     {
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         final EditText editText = new EditText(this);
         editText.setHint("输入逗号分隔符文件路径");
+        editText.setText(path);
         linearLayout.addView(editText);
+        final Button button = new Button(this);
+        button.setText("选择文件");
+        linearLayout.addView(button);
         final CheckBox checkBox = new CheckBox(this);
         checkBox.setText("导入前清空集合");
         linearLayout.addView(checkBox);
@@ -223,7 +254,7 @@ public class ListActivity extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which)
             {
                 String str = Utils.readFile(editText.getText().toString());
-                if(str != null)
+                if(!str.equals(""))
                 {
                     String[] strArray = str.split(String.valueOf(DELIMITER));
                     if(strArray.length > 0)
@@ -244,7 +275,25 @@ public class ListActivity extends AppCompatActivity
                 dialog.dismiss();
             }
         });
-        Dialog dialog = builder.create();
+        final Dialog dialog = builder.create();
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                try
+                {
+                    // Intent.createChooser(intent, "选择逗号分隔符文件")
+                    startActivityForResult(intent, FILE_SELECT_CODE);
+                } catch (ActivityNotFoundException e) {
+                    Utils.toast(ListActivity.this, "未安装文件管理器");
+                }
+                dialog.dismiss();
+            }
+        });
         dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         dialog.show();

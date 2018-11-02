@@ -2,6 +2,7 @@ package io.github.dawncraft.qingchenw.random;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,8 +16,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
-import android.net.Uri;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -51,6 +54,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 import butterknife.BindAnim;
@@ -89,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // 元素列表
     public static List<String> elements = new ArrayList<>();
     // 文本
-    public static String showtext;
+    public static String showText;
     // 语音合成
     public static boolean voiceEnabled;
     public static MySynthesizer.Config synthesizerConfig = new MySynthesizer.Config(
@@ -113,11 +117,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     // 退出计时器
     private long exitTime = 0;
+    // 网络状态判断
+    private boolean hasNetwork = false;
     // 正在摇晃判断
     private boolean isShaking = false;
 
     // 应用信息
     static public PackageInfo packageInfo;
+    // 网络
+    public ConnectivityManager connectivityManager;
     // 配置
     public SharedPreferences sharedPreferences;
     // 传感器
@@ -128,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public SoundPool soundPool;
     // 百度语音合成引擎
     public MySynthesizer speechSynthesizer;
-    // JavaScript引擎
+    // 脚本引擎
     // public WebView webView = new WebView(this);
 
     // 顶部布局
@@ -200,9 +208,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         loadPreferences();
         // 初始化控件
         listText.setText(String.format(getString(R.string.list_number), String.valueOf(elements.size())));
-        voiceText.setText(String.format(getString(R.string.voice_text), showtext));
+        voiceText.setText(String.format(getString(R.string.voice_text), showText));
         if(voiceEnabled) stateImage.setImageDrawable(greenImage);
         else stateImage.setImageDrawable(greyImage);
+        // 获取网络管理器
+        connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null)
+        {
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            if (networkInfo != null)
+            {
+                hasNetwork = networkInfo.isAvailable()/* && Utils.ping("www.baidu.com")*/;
+            }
+        }
         // 获取传感器管理器
         sensorManager = ((SensorManager) getSystemService(SENSOR_SERVICE));
         if (sensorManager != null)
@@ -237,29 +255,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }.start();
         // 检查更新
-        new Thread()
-        {
-            @Override
-            public void run()
-            {
-                super.run();
-                try
-                {
-                    update = new JSONObject(Utils.readUrl(UPDATE_URL));
-                    haveUpdate = packageInfo != null && update.getInt("versionCode") > packageInfo.versionCode;
-                    runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            if (updateEnabled) checkUpdate();
-                        }
-                    });
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
+        if (updateEnabled) checkUpdate();
     }
 
     @Override
@@ -436,7 +432,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         offlineResource = new OfflineResource(this, speakerType);
         params.put(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, offlineResource.getTextFilename());
         params.put(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, offlineResource.getModelFilename());
-        showtext = sharedPreferences.getString("voice_text", getString(R.string.voice_text_default));
+        showText = sharedPreferences.getString("voice_text", getString(R.string.voice_text_default));
         params.put(SpeechSynthesizer.PARAM_VOLUME, String.valueOf(sharedPreferences.getInt("voice_volume", 5)));
         params.put(SpeechSynthesizer.PARAM_SPEED, String.valueOf(sharedPreferences.getInt("voice_speed", 5)));
         params.put(SpeechSynthesizer.PARAM_PITCH, String.valueOf(sharedPreferences.getInt("voice_pitch", 5)));
@@ -448,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         vibrateTime = sharedPreferences.getInt("vibrator_time", 300);
         // 随机算法
         codeEnabled =  sharedPreferences.getBoolean("custom_code", false);
-        code = String.format(CodeActivity.BASE_CODE, Utils.readFile(VOICE_RES_PATH + "/" + CodeActivity.FILE_NAME));
+        code = CodeActivity.formatCode(Utils.readFile(VOICE_RES_PATH + "/" + CodeActivity.FILE_NAME));
         // 更新设置
         updateEnabled = sharedPreferences.getBoolean("update", true);
     }
@@ -533,53 +529,96 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void checkUpdate()
     {
-        if (haveUpdate)
+        if (hasNetwork)
         {
-            LinearLayout linearLayout = new LinearLayout(this);
-            linearLayout.setOrientation(LinearLayout.VERTICAL);
-            final TextView textView = new TextView(this);
-            try
-            {
-                textView.setText(String.format("检查到新版本: %s\n更新内容: \n%s",
-                        update.getString("versionName"), update.getString("description")));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            linearLayout.addView(textView);
-            final CheckBox checkBox = new CheckBox(this);
-            checkBox.setText("如果取消更新,则以后不再提醒");
-            checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+            haveUpdate = false;
+            new Thread()
             {
                 @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+                public void run()
                 {
-                    updateEnabled = !isChecked;
+                    super.run();
+                    try
+                    {
+                        if (update == null)
+                        {
+                            update = new JSONObject(Utils.readUrl(UPDATE_URL));
+                        }
+                        haveUpdate = packageInfo != null && update.getInt("versionCode") > packageInfo.versionCode;
+                    } catch (JSONException e) {
+                        update = null;
+                        e.printStackTrace();
+                    }
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            if (haveUpdate) displayUpdate();
+                            else Utils.toast(MainActivity.this, R.string.no_update);
+                        }
+                    });
+                }
+            }.start();
+        }
+        else
+        {
+            Utils.toast(this, R.string.cannot_update);
+        }
+    }
+
+    public void displayUpdate()
+    {
+        LinearLayout linearLayout = new LinearLayout(MainActivity.this);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        final TextView textView = new TextView(MainActivity.this);
+        try
+        {
+            textView.setText(String.format("检查到新版本: %s\n更新内容: \n%s",
+                    update.getString("versionName"), update.getString("description")));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        linearLayout.addView(textView);
+        final CheckBox checkBox = new CheckBox(MainActivity.this);
+        checkBox.setText("不再提醒");
+        checkBox.setChecked(!updateEnabled);
+        linearLayout.addView(checkBox);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle(R.string.have_update).setCancelable(false).setView(linearLayout);
+        builder.setPositiveButton("更新", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                downLoadUpdate();
+            }
+        });
+        builder.setNegativeButton("下次再说", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                if (checkBox.isChecked())
+                {
+                    updateEnabled = false;
                     SharedPreferences.Editor editor = MainActivity.this.sharedPreferences.edit();
                     editor.putBoolean("update", updateEnabled);
                     editor.apply();
                 }
-            });
-            linearLayout.addView(checkBox);
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.have_update).setCancelable(false).setView(linearLayout);
-            builder.setPositiveButton("更新", new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(DialogInterface dialog, int which)
-                {
-                    downLoadUpdate();
-                }
-            });
-            builder.setNegativeButton("下次再说", null);
-            AlertDialog dialog = builder.create();
-//            dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-//                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-            dialog.show();
-        }
-        else
+            }
+        });
+        final AlertDialog dialog = builder.create();
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
-            Utils.toast(this, R.string.no_update);
-        }
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if (isChecked) dialog.getButton(-2).setText("不再提醒");
+                else dialog.getButton(-2).setText("下次再说");
+            }
+        });
+        dialog.show();
     }
 
     public void downLoadUpdate()
@@ -600,19 +639,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 {
                     // 更新地址
                     String apkUrl = update.getString("updateUrl");
-                    // 下载APK
-                    File file = Utils.downloadFile(apkUrl, VOICE_RES_PATH, dialog);
+                    File file = new File(Environment.getExternalStorageDirectory() + "/" + VOICE_RES_PATH, "update.apk");
+                    if (!file.exists() || !Objects.equals(Utils.fileToMD5(file), update.getString("md5")))
+                    {
+                        // 下载APK
+                        Utils.downloadFile(apkUrl, file, dialog);
+                    }
                     // 安装APK
-                    Intent intent = new Intent();
-                    intent.setAction(Intent.ACTION_VIEW);
-                    intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
-                    startActivity(intent);
+                    Utils.installApk(MainActivity.this, file);
                     // 关闭对话框
                     dialog.dismiss();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }}.start();
+            }
+        }.start();
     }
 
     public void start()
@@ -623,7 +664,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             isShaking = true;
             // 生成文本
             String element = elements.get(generate(size));
-            String text = String.format(showtext, element);
+            String text = String.format(showText, element);
             // 设置中心文本
             outputText.setText(text);
             // 隐藏中心按钮

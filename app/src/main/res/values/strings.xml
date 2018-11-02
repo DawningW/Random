@@ -45,6 +45,7 @@
     <string name="voice_pref_vibrator_time">震动持续时间(毫秒)</string>
     <string name="code">Edit code</string>
     <string name="update">Check update</string>
+    <string name="cannot_update">Can\'t to check update</string>
     <string name="have_update">Your app have an update</string>
     <string name="no_update">Your app is up to date</string>
     <string name="download">Download update</string>

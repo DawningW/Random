@@ -19,6 +19,10 @@ public class CodeActivity extends AppCompatActivity
     public static final String FILE_NAME = "random.js";
     // 伪随机算法的代码模版
     public static final String BASE_CODE = "function generate(list, range, result) { %s }";
+    public static String formatCode(String code)
+    {
+        return String.format(CodeActivity.BASE_CODE, code);
+    }
 
     // 控件
     @BindView(R.id.codeSwitch)

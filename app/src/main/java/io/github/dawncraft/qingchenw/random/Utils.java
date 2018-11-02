@@ -2,18 +2,23 @@ package io.github.dawncraft.qingchenw.random;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
+import android.support.v4.content.FileProvider;
 import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -24,6 +29,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.MessageDigest;
 
 public class Utils
 {
@@ -62,6 +68,65 @@ public class Utils
         return "";
     }
 
+    public static boolean ping(String ip)
+    {
+        try
+        {
+            Process process = Runtime.getRuntime().exec("ping -c 3 -w 100 " + ip);
+            int status = process.waitFor();
+            return status == 0;
+        } catch (InterruptedException | IOException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get the md5 value of the filepath specified file
+     * @param file The file
+     * @return The md5 value
+     */
+    public static String fileToMD5(File file)
+    {
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(file); // Create an FileInputStream instance according to the filepath
+            byte[] buffer = new byte[1024]; // The buffer to read the file
+            MessageDigest digest = MessageDigest.getInstance("MD5"); // Get a MD5 instance
+            int numRead = 0; // Record how many bytes have been read
+            while (numRead != -1) {
+                numRead = inputStream.read(buffer);
+                if (numRead > 0)
+                    digest.update(buffer, 0, numRead); // Update the digest
+            }
+            byte[] md5Bytes = digest.digest(); // Complete the hash computing
+            return convertHashToString(md5Bytes); // Call the function to convert to hex digits
+        } catch (Exception e) {
+            return null;
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close(); // Close the InputStream
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * Convert the hash bytes to hex digits string
+     * @param hashBytes
+     * @return The converted hex digits string
+     */
+    private static String convertHashToString(byte[] hashBytes)
+    {
+        StringBuilder returnVal = new StringBuilder();
+        for (byte hashByte : hashBytes) {
+            returnVal.append(Integer.toString((hashByte & 0xff) + 0x100, 16).substring(1));
+        }
+        return returnVal.toString().toLowerCase();
+    }
+
     public static String readUrl(String urlString)
     {
         try
@@ -74,6 +139,33 @@ public class Utils
             e.printStackTrace();
         }
         return "";
+    }
+
+    public static String getPath(Context context, Uri uri)
+    {
+        if ("content".equalsIgnoreCase(uri.getScheme()))
+        {
+            String[] projection = { "_data" };
+            try
+            {
+                Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
+                if (cursor != null)
+                {
+                    int column_index = cursor.getColumnIndexOrThrow("_data");
+                    if (cursor.moveToFirst())
+                    {
+                        return cursor.getString(column_index);
+                    }
+                    cursor.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if ("file".equalsIgnoreCase(uri.getScheme()))
+        {
+            return uri.getPath();
+        }
+        return null;
     }
 
     public static String readFile(String path)
@@ -104,42 +196,6 @@ public class Utils
             e.printStackTrace();
         }
         return "";
-    }
-
-    public static File downloadFile(String updateUrl, String path, ProgressDialog progressDialog)
-    {
-        if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
-        {
-            try
-            {
-                URL url = new URL(updateUrl);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setConnectTimeout(8 * 1000);
-                // 获取到文件的大小
-                progressDialog.setMax(httpURLConnection.getContentLength());
-                InputStream is = httpURLConnection.getInputStream();
-                File file = new File(Environment.getExternalStorageDirectory() + "/" + path, "update.apk");
-                FileOutputStream fos = new FileOutputStream(file);
-                BufferedInputStream bis = new BufferedInputStream(is);
-                byte[] buffer = new byte[1024];
-                int len;
-                int total = 0;
-                while((len = bis.read(buffer)) != -1)
-                {
-                    fos.write(buffer, 0, len);
-                    total += len;
-                    // 获取当前下载量
-                    progressDialog.setProgress(total);
-                }
-                fos.close();
-                bis.close();
-                is.close();
-                return file;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
     }
 
     public static String createDir(String dir)
@@ -202,6 +258,56 @@ public class Utils
                 }
             }
         }
+    }
+
+    public static File downloadFile(String updateUrl, File file, ProgressDialog progressDialog)
+    {
+        if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
+        {
+            try
+            {
+                URL url = new URL(updateUrl);
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                httpURLConnection.setConnectTimeout(8 * 1000);
+                // 获取到文件的大小
+                progressDialog.setMax(httpURLConnection.getContentLength());
+                InputStream is = httpURLConnection.getInputStream();
+                FileOutputStream fos = new FileOutputStream(file);
+                BufferedInputStream bis = new BufferedInputStream(is);
+                byte[] buffer = new byte[1024];
+                int len;
+                int total = 0;
+                while((len = bis.read(buffer)) != -1)
+                {
+                    fos.write(buffer, 0, len);
+                    total += len;
+                    // 获取当前下载量
+                    progressDialog.setProgress(total);
+                }
+                fos.close();
+                bis.close();
+                is.close();
+                return file;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public static void installApk(Context context, File file)
+    {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        {
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Uri contentUri = FileProvider.getUriForFile(context, "io.github.dawncraft.qingchenw.random.FileProvider", file);
+            intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
+        } else {
+            intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+        }
+        context.startActivity(intent);
     }
 
     public static void toast(Context context, @StringRes int resId)

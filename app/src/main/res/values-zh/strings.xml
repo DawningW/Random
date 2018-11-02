@@ -45,6 +45,7 @@
     <string name="voice_pref_vibrator_time">震动持续时间(毫秒)</string>
     <string name="code">随机算法</string>
     <string name="update">检查更新</string>
+    <string name="cannot_update">无法检查更新</string>
     <string name="have_update">发现新版本</string>
     <string name="no_update">当前已是最新版本</string>
     <string name="download">下载新版本</string>

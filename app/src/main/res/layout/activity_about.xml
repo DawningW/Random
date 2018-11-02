@@ -69,4 +69,5 @@
         android:textAlignment="center"
         android:textAllCaps="false"
         android:textSize="24sp" />
+
 </LinearLayout>
