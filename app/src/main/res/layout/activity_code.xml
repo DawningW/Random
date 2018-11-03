@@ -47,37 +47,13 @@
         android:layout_weight="0"
         android:background="@color/colorDivider" />
 
-    <LinearLayout
-        android:id="@+id/codeButtonBar"
-        style="?attr/buttonBarStyle"
+    <Button
+        android:id="@+id/codeButton"
+        style="?attr/buttonBarButtonStyle"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:layout_weight="0"
-        android:orientation="horizontal">
+        android:onClick="onClicked"
+        android:text="检查语法" />
 
-        <Button
-            android:id="@+id/codeCheckButton"
-            style="?attr/buttonBarButtonStyle"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:onClick="onClicked"
-            android:text="检查语法" />
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0"
-            android:background="@color/colorDivider" />
-
-        <Button
-            android:id="@+id/codeSaveButton"
-            style="?attr/buttonBarButtonStyle"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:onClick="onClicked"
-            android:text="保存代码" />
-
-    </LinearLayout>
 </LinearLayout>

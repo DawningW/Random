@@ -1,8 +1,8 @@
 {
     "name": "Random",
-    "versionName": "1.5",
-    "versionCode": 6,
-    "updateUrl": "https://github.com/DawningW/Random/releases/download/1.5/app-release.apk",
-    "md5": "bff09c2ffb58bed504736cac0b55db1d",
-    "description": "1.增加文件选择器2.修复更新"
+    "versionName": "1.6",
+    "versionCode": 7,
+    "updateUrl": "https://github.com/DawningW/Random/releases/download/1.6/app-release.apk",
+    "md5": "530a3e4827896b03ab14913b0ae07889",
+    "description": "第一个正式发布版本"
 }

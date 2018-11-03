@@ -2,12 +2,13 @@ package io.github.dawncraft.qingchenw.random;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Switch;
 
 import butterknife.BindView;
@@ -29,8 +30,8 @@ public class CodeActivity extends AppCompatActivity
     public Switch codeSwitch;
     @BindView(R.id.codeEditor)
     public EditText codeEditor;
-    @BindView(R.id.codeButtonBar)
-    public LinearLayout codeButtonBar;
+    @BindView(R.id.codeButton)
+    public Button codeButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -47,6 +48,7 @@ public class CodeActivity extends AppCompatActivity
     protected void onStart()
     {
         super.onStart();
+        // 初始化控件
         codeSwitch.setChecked(MainActivity.codeEnabled);
         codeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
@@ -54,13 +56,10 @@ public class CodeActivity extends AppCompatActivity
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
                 MainActivity.codeEnabled = isChecked;
-                SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(CodeActivity.this).edit();
-                editor.putBoolean("custom_code", isChecked);
-                editor.apply();
                 switchState(isChecked);
             }
         });
-        codeEditor.setText(Utils.readFile(MainActivity.VOICE_RES_PATH + FILE_NAME));
+        codeEditor.setText(Utils.readFile(MainActivity.VOICE_RES_PATH + "/" + FILE_NAME));
         switchState(MainActivity.codeEnabled);
     }
 
@@ -68,28 +67,35 @@ public class CodeActivity extends AppCompatActivity
     protected void onPause()
     {
         super.onPause();
-        if (MainActivity.codeEnabled && !check(MainActivity.code))
+        String str = codeEditor.getText().toString();
+        String code = formatCode(str);
+        // 检查代码
+        if (MainActivity.codeEnabled)
         {
-            MainActivity.codeEnabled = false;
-            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(CodeActivity.this).edit();
-            editor.putBoolean("custom_code", MainActivity.codeEnabled);
-            editor.apply();
-            Utils.toast(this, "代码有错误,伪随机算法已禁用");
+            if (check(code))
+            {
+                MainActivity.code = code;
+            }
+            else
+            {
+                MainActivity.codeEnabled = false;
+                Utils.toast(this, "代码有错误,伪随机算法已禁用");
+            }
         }
+        // 保存配置
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(CodeActivity.this).edit();
+        editor.putBoolean("custom_code", MainActivity.codeEnabled);
+        editor.apply();
+        Utils.writeFile(MainActivity.VOICE_RES_PATH + "/" + FILE_NAME, str);
     }
 
     public void onClicked(View view)
     {
         switch(view.getId())
         {
-            case R.id.codeCheckButton:
+            case R.id.codeButton:
             {
-                check(String.format(CodeActivity.BASE_CODE, codeEditor.getText().toString()));
-                break;
-            }
-            case R.id.codeSaveButton:
-            {
-                save();
+                check(formatCode(codeEditor.getText().toString()));
                 break;
             }
         }
@@ -98,29 +104,12 @@ public class CodeActivity extends AppCompatActivity
     public void switchState(boolean enabled)
     {
         codeEditor.setEnabled(enabled);
-        for (int i = 0; i < codeButtonBar.getChildCount(); i++)
-        {
-            codeButtonBar.getChildAt(i).setEnabled(enabled);
-        }
+        codeButton.setEnabled(enabled);
     }
 
     public boolean check(String code)
     {
-        return false;
-    }
-
-    public void save()
-    {
-        String str = codeEditor.getText().toString();
-        String code = String.format(CodeActivity.BASE_CODE, str);
-        if (check(code))
-        {
-            MainActivity.code = code;
-            Utils.writeFile(MainActivity.VOICE_RES_PATH + FILE_NAME, str);
-        }
-        else
-        {
-            Utils.toast(this, "代码有错误,伪随机算法保存失败");
-        }
+        Utils.toast(this, "语法检查功能尚不可用");
+        return true;
     }
 }

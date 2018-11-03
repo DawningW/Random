@@ -198,9 +198,8 @@ public class Utils
         return "";
     }
 
-    public static String createDir(String dir)
+    public static String createDir(String path)
     {
-        String path = Environment.getExternalStorageDirectory().toString() + "/" + dir;
         File file = new File(path);
         if (!file.exists()) file.mkdirs();
         return path;

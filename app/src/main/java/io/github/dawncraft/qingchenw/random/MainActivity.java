@@ -47,6 +47,8 @@ import com.baidu.tts.client.TtsMode;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.Scriptable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -78,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // 更新地址
     public static final String UPDATE_URL = "https://raw.githubusercontent.com/DawningW/Random/master/update.json";
     // 语音合成引擎资源文件
-    public static final String VOICE_RES_PATH = "BaiduTTS";
+    public static final String VOICE_RES_PATH = Environment.getExternalStorageDirectory() + "/" + "BaiduTTS";
     // JavaScript网页模版
     // public static final String BASE_HTML = "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><script>%s</script></head></html>";
     // 权限
@@ -137,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // 百度语音合成引擎
     public MySynthesizer speechSynthesizer;
     // 脚本引擎
-    // public WebView webView = new WebView(this);
+    public org.mozilla.javascript.Context javaScriptContext;
 
     // 顶部布局
     @BindView(R.id.topLayout)
@@ -254,6 +256,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         }.start();
+        // 初始化脚本引擎
+        javaScriptContext = org.mozilla.javascript.Context.enter();
+        javaScriptContext.setOptimizationLevel(-1);
         // 检查更新
         if (updateEnabled) checkUpdate();
     }
@@ -285,6 +290,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         {
             speechSynthesizer.stop();
             speechSynthesizer.release();
+            speechSynthesizer = null;
+        }
+        // 释放脚本引擎
+        if (javaScriptContext != null)
+        {
+            org.mozilla.javascript.Context.exit();
+            javaScriptContext = null;
         }
     }
 
@@ -639,7 +651,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 {
                     // 更新地址
                     String apkUrl = update.getString("updateUrl");
-                    File file = new File(Environment.getExternalStorageDirectory() + "/" + VOICE_RES_PATH, "update.apk");
+                    File file = new File(VOICE_RES_PATH, "update.apk");
                     if (!file.exists() || !Objects.equals(Utils.fileToMD5(file), update.getString("md5")))
                     {
                         // 下载APK
@@ -723,7 +735,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int result = rand.nextInt(range);
         if (codeEnabled)
         {
-            // TODO 实现自定义JavaScript伪随机算法
+            Scriptable scope = javaScriptContext.initStandardObjects();
+            javaScriptContext.evaluateString(scope, code, null, 1, null);
+            Object jsObj = scope.get("generate" , scope);
+            if (jsObj instanceof Function)
+            {
+                Object args[] = {elements.toArray(new String[0]), range, result};
+                Function generate = (Function) jsObj;
+                Object returnValue = generate.call(javaScriptContext, scope, scope, args);
+                int newResult = (int) org.mozilla.javascript.Context.toNumber(returnValue);
+                if (newResult >=0 && newResult <= range)
+                {
+                    return newResult;
+                }
+            }
+            Utils.toast(this, "The code is invalid, please check.");
         }
         return result;
     }
