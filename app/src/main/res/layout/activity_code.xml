@@ -16,7 +16,7 @@
         android:layout_weight="0"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="是否使用伪随机算法"
+        android:text="@string/code_enable"
         android:textSize="18sp" />
 
     <TextView
@@ -25,21 +25,18 @@
         android:layout_weight="0"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="随机算法使用JavaScript编写,在下方直接写代码即可,参数列表:list, range, result"
+        android:text="@string/code_hint"
         android:textSize="18sp" />
 
-    <EditText
+    <com.github.ahmadaghazadeh.editor.widget.CodeEditor
         android:id="@+id/codeEditor"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
         android:layout_weight="1"
-        android:ems="10"
         android:fontFamily="monospace"
-        android:gravity="top"
-        android:hint="直接写代码即可,参数列表:list, range, result"
-        android:inputType="textMultiLine" />
+        app:lang="javascript"
+        app:isReadOnly="false"
+        app:isShowExtendedKeyboard="true" />
 
     <View
         android:layout_width="match_parent"
@@ -54,6 +51,5 @@
         android:layout_height="wrap_content"
         android:layout_weight="0"
         android:onClick="onClicked"
-        android:text="检查语法" />
-
+        android:text="@string/code_check" />
 </LinearLayout>

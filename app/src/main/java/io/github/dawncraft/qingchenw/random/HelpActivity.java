@@ -4,20 +4,19 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.webkit.WebView;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class HelpActivity extends AppCompatActivity
 {
     // 控件
-    @BindView(R.id.webView)
     public WebView webView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_help);
+        webView = new WebView(this);
+        setContentView(webView);
         if(getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // 初始化ButterKnife
@@ -31,7 +30,6 @@ public class HelpActivity extends AppCompatActivity
         // 设置字符集编码
         webView.getSettings().setDefaultTextEncodingName("UTF-8");
         // 加载assets目录下的网页
-        String url = "file:///android_asset/help/index.html";
-        webView.loadUrl(url);
+        webView.loadUrl("file:///android_asset/help/index.html");
     }
 }

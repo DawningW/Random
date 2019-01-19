@@ -50,7 +50,7 @@ public class IntEditTextPreference extends EditTextPreference
     @Override
     protected void onSetInitialValue(boolean restoreValue, Object defaultValue)
     {
-        if(restoreValue)
+        if (restoreValue)
         {
             setText(String.valueOf(getPersistedInt(mDefaultValue)));
         }

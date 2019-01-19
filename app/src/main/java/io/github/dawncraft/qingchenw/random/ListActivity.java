@@ -17,7 +17,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -26,7 +25,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.File;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindAnim;
 import butterknife.BindView;
@@ -47,12 +48,18 @@ public class ListActivity extends AppCompatActivity
     // 控件
     @BindView(R.id.recyclerView)
     public RecyclerView recyclerView;
+    @BindView(R.id.backgroundView)
+    public View backgroundView;
     @BindView(R.id.menuLayout)
     public LinearLayout menuLayout;
     @BindView(R.id.floatingActionButton)
     public FloatingActionButton floatingActionButton;
 
     // 动画
+    @BindAnim(R.anim.anim_fade_in)
+    public Animation fadeInAnim;
+    @BindAnim(R.anim.anim_fade_out)
+    public Animation fadeOutAnim;
     @BindAnim(R.anim.anim_menu_show)
     public Animation showMenuAnim;
     @BindAnim(R.anim.anim_menu_dismiss)
@@ -77,6 +84,30 @@ public class ListActivity extends AppCompatActivity
         // 初始化触摸
         itemTouchHelper = new ItemTouchHelper(new RecyclerAdapter.Callback());
         itemTouchHelper.attachToRecyclerView(recyclerView);
+        // 初始化菜单
+        backgroundView.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                switchMenu();
+            }
+        });
+        dismissMenuAnim.setAnimationListener(new Animation.AnimationListener()
+        {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation)
+            {
+                backgroundView.setVisibility(View.GONE);
+                menuLayout.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
     }
 
     @Override
@@ -101,7 +132,7 @@ public class ListActivity extends AppCompatActivity
                     if (uri != null)
                     {
                         String path = Utils.getPath(this, uri);
-                        readFloatButton(path);
+                        loadDialog(path);
                     }
                 }
             }
@@ -111,11 +142,9 @@ public class ListActivity extends AppCompatActivity
     @Override
     public void onBackPressed()
     {
-        if(menuLayout.getVisibility() == View.VISIBLE)
+        if (menuLayout.getVisibility() == View.VISIBLE)
         {
-            menuLayout.setVisibility(View.GONE);
-            // 隐藏菜单
-            menuLayout.startAnimation(dismissMenuAnim);
+            switchMenu();
         }
         else
         {
@@ -125,22 +154,22 @@ public class ListActivity extends AppCompatActivity
 
     public void onClicked(View view)
     {
-        switch(view.getId())
+        switch (view.getId())
         {
             case R.id.floatingActionButton:
                 switchMenu();
                 break;
             case R.id.addFloatButton:
-                inputNameDialog();
+                inputDialog();
                 break;
-            case R.id.addManyFloatButton:
-                inputNumberDialog();
+            case R.id.addMoreFloatButton:
+                batchDialog();
                 break;
             case R.id.readFloatButton:
-                readFloatButton("");
+                loadDialog("");
                 break;
             case R.id.saveFloatButton:
-                saveFloatButton();
+                saveDialog();
                 break;
             case R.id.clearFloatButton:
                 clearDialog();
@@ -150,131 +179,120 @@ public class ListActivity extends AppCompatActivity
 
     public void switchMenu()
     {
-        if(menuLayout.getVisibility() != View.VISIBLE)
+        if (menuLayout.getVisibility() != View.VISIBLE)
         {
+            backgroundView.setVisibility(View.VISIBLE);
             menuLayout.setVisibility(View.VISIBLE);
-            // 显示菜单
+            // 显示菜单动画
+            backgroundView.startAnimation(fadeInAnim);
             menuLayout.startAnimation(showMenuAnim);
         }
         else
         {
-            menuLayout.setVisibility(View.GONE);
-            // 隐藏菜单
+            // FIX 先隐藏后播放动画会导致View重新显示
+            // 隐藏菜单动画
+            backgroundView.startAnimation(fadeOutAnim);
             menuLayout.startAnimation(dismissMenuAnim);
         }
     }
 
-    public void inputNameDialog()
+    public void inputDialog()
     {
         final EditText editText = new EditText(this);
-        editText.setHint("请输入元素名字");
+        editText.setHint(R.string.list_menu_add_hint);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("输入名字").setView(editText);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener()
+        builder.setTitle(R.string.list_menu_add_title).setView(editText);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                recyclerAdapter.insertItem(recyclerAdapter.getItemCount(), editText.getText().toString());
+                String text = editText.getText().toString();
+                if (!text.isEmpty())
+                {
+                    recyclerAdapter.insertItem(recyclerAdapter.getItemCount(), text);
+                }
+                else
+                {
+                    Utils.toast(ListActivity.this, R.string.list_menu_add_empty);
+                }
             }
         });
-        builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
-                dialog.dismiss();
-            }
-        });
-        Dialog dialog = builder.create();
-        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-        dialog.show();
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
     }
 
-    public void inputNumberDialog()
+    /* 默认添加元素的数量 */
+    private static final int DEFAULT_ADD_NUMBER = 50;
+
+    public void batchDialog()
     {
         final EditText editText = new EditText(this);
-        editText.setText(String.valueOf(50));
-        editText.setHint("请输入大于0的整数");
+        editText.setText(String.valueOf(DEFAULT_ADD_NUMBER));
+        editText.setHint(R.string.list_menu_addmore_hint);
         editText.setInputType(InputType.TYPE_CLASS_NUMBER);
         editText.setSelection(editText.getText().length());
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("输入个数").setView(editText);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener()
+        builder.setTitle(R.string.list_menu_addmore_title).setView(editText);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
                 int num = Integer.valueOf(editText.getText().toString());
-                if(num > 0 && num < Integer.MAX_VALUE)
+                if (num > 0)
                 {
-                    recyclerAdapter.insertItemRange(recyclerAdapter.getItemCount() + 1,
-                            recyclerAdapter.getItemCount() + num);
+                    List<String> items = new ArrayList<>();
+                    for (int i = 1; i <= num; i++) items.add(String.valueOf(i));
+                    recyclerAdapter.insertItems(recyclerAdapter.getItemCount(), items);
                 }
                 else
                 {
-                    Utils.toast(ListActivity.this, "无效参数, 范围为: " + 0 + " ~ " + Integer.MAX_VALUE);
+                    Utils.toast(ListActivity.this,
+                            String.format(getString(R.string.list_menu_addmore_invalid), Integer.MAX_VALUE));
                 }
             }
         });
-        builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
-                dialog.dismiss();
-            }
-        });
-        Dialog dialog = builder.create();
-        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-        dialog.show();
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
     }
 
-    public void readFloatButton(String path)
+    public void loadDialog(String path)
     {
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         final EditText editText = new EditText(this);
-        editText.setHint("输入逗号分隔符文件路径");
+        editText.setHint(R.string.list_menu_load_hint);
         editText.setText(path);
         linearLayout.addView(editText);
         final Button button = new Button(this);
-        button.setText("选择文件");
+        button.setText(R.string.list_menu_load_choose);
         linearLayout.addView(button);
         final CheckBox checkBox = new CheckBox(this);
-        checkBox.setText("导入前清空集合");
+        checkBox.setText(R.string.list_menu_load_empty);
         linearLayout.addView(checkBox);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("从文件中读取").setView(linearLayout);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener()
+        builder.setTitle(R.string.list_menu_load_title).setView(linearLayout);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
                 String str = Utils.readFile(editText.getText().toString());
-                if(!str.equals(""))
+                if(!str.isEmpty())
                 {
-                    String[] strArray = str.split(String.valueOf(DELIMITER));
-                    if(strArray.length > 0)
+                    String[] items = str.split(String.valueOf(DELIMITER));
+                    if(items.length > 0)
                     {
                         if(checkBox.isChecked()) recyclerAdapter.clearItem();
-                        Collections.addAll(MainActivity.elements, strArray);
+                        recyclerAdapter.insertItems(recyclerAdapter.getItemCount(), Arrays.asList(items));
                         return;
                     }
                 }
-                Utils.toast(ListActivity.this,"不是有效的逗号分隔符文件");
+                Utils.toast(ListActivity.this,R.string.list_menu_load_invalid);
             }
         });
-        builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
-                dialog.dismiss();
-            }
-        });
+        builder.setNegativeButton(android.R.string.cancel, null);
         final Dialog dialog = builder.create();
         button.setOnClickListener(new View.OnClickListener()
         {
@@ -286,32 +304,30 @@ public class ListActivity extends AppCompatActivity
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 try
                 {
-                    // Intent.createChooser(intent, "选择逗号分隔符文件")
+                    // Intent.createChooser(intent, "选择逗号分隔符文件");
                     startActivityForResult(intent, FILE_SELECT_CODE);
+                    dialog.dismiss();
                 } catch (ActivityNotFoundException e) {
-                    Utils.toast(ListActivity.this, "未安装文件管理器");
+                    Utils.toast(ListActivity.this, R.string.list_menu_load_no_file_manager);
                 }
-                dialog.dismiss();
             }
         });
-        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         dialog.show();
     }
 
-    public void saveFloatButton()
+    public void saveDialog()
     {
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         final EditText editText = new EditText(this);
-        editText.setHint("输入逗号分隔符文件路径");
+        editText.setHint(R.string.list_menu_save_hint);
         linearLayout.addView(editText);
         final CheckBox checkBox = new CheckBox(this);
-        checkBox.setText("强制覆盖文件");
+        checkBox.setText(R.string.list_menu_save_cover);
         linearLayout.addView(checkBox);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("保存到文件").setView(linearLayout);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener()
+        builder.setTitle(R.string.list_menu_save_title).setView(linearLayout);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface dialog, int which)
@@ -322,30 +338,23 @@ public class ListActivity extends AppCompatActivity
                     Utils.writeFile(path, Utils.join(DELIMITER, MainActivity.elements.toArray(new String[]{})));
                     return;
                 }
-                Utils.toast(ListActivity.this,"无法写入文件,可能是文件已存在");
+                Utils.toast(ListActivity.this,R.string.list_menu_save_failed);
             }
         });
-        builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
-                dialog.dismiss();
-            }
-        });
-        Dialog dialog = builder.create();
-        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-        dialog.show();
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
     }
 
     public void clearDialog()
     {
         final TextView textView = new TextView(this);
-        textView.setText("真的要清空集合吗");
+        textView.setText(R.string.list_menu_clear_hint);
+        textView.setTextSize(18);
+        int padding = Utils.dp2px(this, 16);
+        textView.setPaddingRelative(padding, padding, padding, padding);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("清空集合").setView(textView);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener()
+        builder.setTitle(R.string.list_menu_clear_title).setView(textView);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface dialog, int which)
@@ -353,17 +362,7 @@ public class ListActivity extends AppCompatActivity
                 recyclerAdapter.clearItem();
             }
         });
-        builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
-                dialog.dismiss();
-            }
-        });
-        Dialog dialog = builder.create();
-        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-        dialog.show();
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
     }
 }

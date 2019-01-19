@@ -19,12 +19,10 @@ import java.util.Map;
  */
 public class MySynthesizer
 {
-    private static boolean isInitied = false;
+    private static boolean isInitial = false;
 
     private Context context;
     private SpeechSynthesizer speechSynthesizer;
-
-    private boolean isCheckFile = true;
 
     public MySynthesizer(Context context, Config config)
     {
@@ -34,17 +32,17 @@ public class MySynthesizer
 
     public MySynthesizer(Context context)
     {
-        if (isInitied)
+        if (isInitial)
         {
-            // SpeechSynthesizer.getInstance() 不要连续调用
-            throw new RuntimeException("SpeechSynthesizer还未释放, 请勿新建一个新类");
+            // 不能连续调用SpeechSynthesizer.getInstance()
+            throw new RuntimeException("SpeechSynthesizer hasn't been released, don't create a new object!");
         }
         this.context = context;
-        isInitied = true;
+        isInitial = true;
     }
 
     /**
-     * 该方法需要在新线程中调用, 且该线程不能结束.
+     * 该方法需要在新线程中调用, 且该线程不能结束
      *
      * @param config
      * @return
@@ -70,15 +68,16 @@ public class MySynthesizer
             if (!authInfo.isSuccess())
             {
                 String errorMsg = authInfo.getTtsError().getDetailMessage();
-                Log.e(context.getPackageName(), "语音合成引擎授权失败: " + errorMsg);
-                return false;
+                Log.e(context.getPackageName(),
+                        String.format(context.getString(R.string.synthesize_auth_error), errorMsg));
             }
         }
 
         int result = speechSynthesizer.initTts(config.getTtsMode());
         if (result != 0)
         {
-            Log.e(context.getPackageName(), "语音合成引擎初始化失败: " + result);
+            Log.e(context.getPackageName(),
+                    String.format(context.getString(R.string.synthesize_init_error), result));
             return false;
         }
 
@@ -101,6 +100,7 @@ public class MySynthesizer
      *
      * @param text 小于1024 GBK字节，即512个汉字或者字母数字
      * @param utteranceId 用于listener的回调，默认"0"
+     *
      * @return
      */
     public int speak(String text, String utteranceId)
@@ -128,7 +128,7 @@ public class MySynthesizer
         speechSynthesizer.stop();
         speechSynthesizer.release();
         speechSynthesizer = null;
-        isInitied = false;
+        isInitial = false;
     }
 
     /**
@@ -142,22 +142,22 @@ public class MySynthesizer
     }
 
     /**
-     * 引擎在合成时该方法不能调用！！！
      * 注意 只有 TtsMode.MIX 才可以切换离线发音
      *
      * @return
      */
     public int loadModel(String modelFilename, String textFilename)
     {
+        // 合成语音时不能调用该方法!
+        stop();
         return speechSynthesizer.loadModel(modelFilename, textFilename);
     }
 
     /**
-     * 设置播放音量，默认已经是最大声音
-     * 0.0f为最小音量，1.0f为最大音量
+     * 设置播报音量，默认最大
      *
-     * @param leftVolume  [0-1] 默认1.0f
-     * @param rightVolume [0-1] 默认1.0f
+     * @param leftVolume 范围[0, 1], 默认1.0f
+     * @param rightVolume 范围[0, 1], 默认1.0f
      */
     public void setStereoVolume(float leftVolume, float rightVolume)
     {

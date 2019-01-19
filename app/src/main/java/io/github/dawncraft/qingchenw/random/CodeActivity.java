@@ -2,17 +2,17 @@ package io.github.dawncraft.qingchenw.random;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.Switch;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import com.github.ahmadaghazadeh.editor.widget.CodeEditor;
 
 public class CodeActivity extends AppCompatActivity
 {
@@ -22,14 +22,14 @@ public class CodeActivity extends AppCompatActivity
     public static final String BASE_CODE = "function generate(list, range, result) { %s }";
     public static String formatCode(String code)
     {
-        return String.format(CodeActivity.BASE_CODE, code);
+        return String.format(BASE_CODE, code);
     }
 
     // 控件
     @BindView(R.id.codeSwitch)
     public Switch codeSwitch;
     @BindView(R.id.codeEditor)
-    public EditText codeEditor;
+    public CodeEditor codeEditor;
     @BindView(R.id.codeButton)
     public Button codeButton;
 
@@ -38,7 +38,7 @@ public class CodeActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_code);
-        if(getSupportActionBar() != null)
+        if (getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // 初始化ButterKnife
         ButterKnife.bind(this);
@@ -59,7 +59,9 @@ public class CodeActivity extends AppCompatActivity
                 switchState(isChecked);
             }
         });
-        codeEditor.setText(Utils.readFile(MainActivity.VOICE_RES_PATH + "/" + FILE_NAME));
+        codeEditor.getSetting().setWorkingFolder(MainActivity.RES_PATH);
+        codeEditor.getTextProcessor().setCodeCompletion(false);
+        codeEditor.setText(Utils.readFile(MainActivity.RES_PATH + "/" + FILE_NAME), 1);
         switchState(MainActivity.codeEnabled);
     }
 
@@ -67,7 +69,7 @@ public class CodeActivity extends AppCompatActivity
     protected void onPause()
     {
         super.onPause();
-        String str = codeEditor.getText().toString();
+        String str = codeEditor.getText();
         String code = formatCode(str);
         // 检查代码
         if (MainActivity.codeEnabled)
@@ -79,36 +81,32 @@ public class CodeActivity extends AppCompatActivity
             else
             {
                 MainActivity.codeEnabled = false;
-                Utils.toast(this, "代码有错误,伪随机算法已禁用");
+                Utils.toast(this, R.string.code_invalid2);
             }
         }
         // 保存配置
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(CodeActivity.this).edit();
         editor.putBoolean("custom_code", MainActivity.codeEnabled);
         editor.apply();
-        Utils.writeFile(MainActivity.VOICE_RES_PATH + "/" + FILE_NAME, str);
+        Utils.writeFile(MainActivity.RES_PATH + "/" + FILE_NAME, str);
     }
 
     public void onClicked(View view)
     {
-        switch(view.getId())
-        {
-            case R.id.codeButton:
-            {
-                check(formatCode(codeEditor.getText().toString()));
-                break;
-            }
-        }
+        if (view.getId() == R.id.codeButton)
+            check(formatCode(codeEditor.getText()));
     }
 
     public void switchState(boolean enabled)
     {
-        codeEditor.setEnabled(enabled);
+        codeEditor.setReadOnly(!enabled);
+        codeEditor.getTextProcessor().setEnabled(enabled);
         codeButton.setEnabled(enabled);
     }
 
     public boolean check(String code)
     {
+        // TODO 语法检查功能
         Utils.toast(this, "语法检查功能尚不可用");
         return true;
     }

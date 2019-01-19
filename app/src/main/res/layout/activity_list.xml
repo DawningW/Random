@@ -19,185 +19,94 @@
 
     </android.support.v7.widget.RecyclerView>
 
+    <View
+        android:id="@+id/backgroundView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/colorBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
     <LinearLayout
         android:id="@+id/menuLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="104dp"
-        android:background="@android:color/background_light"
-        android:elevation="2dp"
+        android:gravity="end"
         android:orientation="vertical"
         android:padding="4dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="4dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="14dp"
-                android:layout_marginEnd="14dp"
-                android:layout_weight="1"
-                android:text="@string/list_menu_add" />
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/addFloatButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:layout_weight="0"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClicked"
-                app:backgroundTint="@android:color/holo_green_light"
-                app:fabSize="mini"
-                app:srcCompat="@drawable/ic_add_black_24dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
+        <io.github.dawncraft.qingchenw.random.FloatingMenuItem
+            android:id="@+id/addFloatButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="4dp">
+            android:onClick="onClicked"
+            android:text="@string/list_menu_add"
+            app:backgroundTint="@android:color/holo_green_light"
+            app:srcCompat="@drawable/ic_add_black_24dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="14dp"
-                android:layout_marginEnd="14dp"
-                android:layout_weight="1"
-                android:text="@string/list_menu_addmany" />
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/addManyFloatButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:layout_weight="0"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClicked"
-                app:backgroundTint="@android:color/holo_orange_light"
-                app:fabSize="mini"
-                app:srcCompat="@drawable/ic_addlist_black_24dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <io.github.dawncraft.qingchenw.random.FloatingMenuItem
+            android:id="@+id/addMoreFloatButton"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="4dp">
+            android:onClick="onClicked"
+            android:text="@string/list_menu_addmore"
+            app:backgroundTint="@android:color/holo_orange_light"
+            app:srcCompat="@drawable/ic_addlist_black_24dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="14dp"
-                android:layout_marginEnd="14dp"
-                android:layout_weight="1"
-                android:text="@string/list_menu_read" />
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/readFloatButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:layout_weight="0"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClicked"
-                app:backgroundTint="@android:color/holo_blue_bright"
-                app:fabSize="mini"
-                app:srcCompat="@drawable/ic_open_black_24dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <io.github.dawncraft.qingchenw.random.FloatingMenuItem
+            android:id="@+id/readFloatButton"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="4dp">
+            android:onClick="onClicked"
+            android:text="@string/list_menu_load"
+            app:backgroundTint="@android:color/holo_blue_bright"
+            app:srcCompat="@drawable/ic_open_black_24dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="14dp"
-                android:layout_marginEnd="14dp"
-                android:layout_weight="1"
-                android:text="@string/list_menu_save" />
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/saveFloatButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:layout_weight="0"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClicked"
-                app:backgroundTint="@android:color/holo_purple"
-                app:fabSize="mini"
-                app:srcCompat="@drawable/ic_save_black_24dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <io.github.dawncraft.qingchenw.random.FloatingMenuItem
+            android:id="@+id/saveFloatButton"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="4dp">
+            android:onClick="onClicked"
+            android:text="@string/list_menu_save"
+            app:backgroundTint="@android:color/holo_purple"
+            app:srcCompat="@drawable/ic_save_black_24dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="14dp"
-                android:layout_marginEnd="14dp"
-                android:layout_weight="1"
-                android:text="@string/list_menu_clear" />
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/clearFloatButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:layout_weight="0"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="onClicked"
-                app:backgroundTint="@android:color/holo_red_light"
-                app:fabSize="mini"
-                app:srcCompat="@drawable/ic_delete_black_24dp" />
-
-        </LinearLayout>
+        <io.github.dawncraft.qingchenw.random.FloatingMenuItem
+            android:id="@+id/clearFloatButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClicked"
+            android:text="@string/list_menu_clear"
+            app:backgroundTint="@android:color/holo_red_light"
+            app:srcCompat="@drawable/ic_delete_black_24dp" />
     </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/floatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
         android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
         android:clickable="true"
         android:focusable="true"
         android:onClick="onClicked"
         android:tint="@android:color/white"
-        app:srcCompat="@drawable/ic_add_black_24dp"
         app:backgroundTint="@android:color/holo_blue_dark"
         app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_add_black_24dp" />
 
 </android.support.constraint.ConstraintLayout>

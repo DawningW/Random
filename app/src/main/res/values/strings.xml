@@ -1,58 +1,110 @@
 <resources>
     <string name="app_name">Who is lucky?</string>
+
     <string name="shake">Have a shake</string>
-    <string name="state">Voice state:</string>
+    <string name="synthesize_state">Voice state: </string>
+    <string name="synthesize_initializing">The TTS engine is initializing. Please try again later.</string>
+    <string name="synthesize_error">Synthesized speech play error: %s</string>
+    <string name="synthesize_auth_error">The TTS engine authorization fails: %s</string>
+    <string name="synthesize_init_error">The TTS engine initialization fails: %d</string>
     <string name="copyright">Made by QingChenW</string>
     <string name="exit">Press again to exit</string>
+
     <string name="list">Aggregation</string>
     <string name="list_number">Element number: %s</string>
     <string name="list_edit">Edit</string>
+    <string name="list_item_edit_title">Change name</string>
+    <string name="list_item_edit_hint">Please input the new name</string>
+    <string name="list_item_delete">Delete</string>
+    <string name="list_item_move">Move</string>
     <string name="list_menu_add">Add an element</string>
-    <string name="list_menu_clear">Clear all</string>
+    <string name="list_menu_add_title">Input name</string>
+    <string name="list_menu_add_hint">Please input the element\'s name</string>
+    <string name="list_menu_add_empty">Please input name</string>
+    <string name="list_menu_addmore">Add some numbers</string>
+    <string name="list_menu_addmore_title">Input number</string>
+    <string name="list_menu_addmore_hint">Please enter integers greater than 0</string>
+    <string name="list_menu_addmore_invalid">Invalid quantity, the range is: 0 ~ %d</string>
+    <string name="list_menu_load">Load from file</string>
+    <string name="list_menu_load_title">Load from CSV file</string>
+    <string name="list_menu_load_hint">Input the CSV file path</string>
+    <string name="list_menu_load_choose">Choose a file</string>
+    <string name="list_menu_load_empty">Clean up the collection before importing</string>
+    <string name="list_menu_load_invalid">Invalid CSV file</string>
+    <string name="list_menu_load_no_file_manager">You have no file Manager</string>
     <string name="list_menu_save">Save to file</string>
-    <string name="list_menu_read">Read from file</string>
-    <string name="list_menu_addmany">Add some numbers</string>
+    <string name="list_menu_save_title">Save to CSV file</string>
+    <string name="list_menu_save_hint">Input the CSV file path</string>
+    <string name="list_menu_save_cover">Cover existing file by force</string>
+    <string name="list_menu_save_failed">Can\'t write to file, it may already exists</string>
+    <string name="list_menu_clear">Clear all</string>
+    <string name="list_menu_clear_title">Empty the entire collection</string>
+    <string name="list_menu_clear_hint">Do you really want to clear all elements?</string>
     <string name="list_blank">Please input some elements</string>
     <string name="no_storage_permission">You must have the permission to use some functions</string>
+
     <string name="voice">Voice</string>
     <string name="voice_text">Text: %s</string>
     <string name="voice_text_default">Please %s answer this problem</string>
     <string name="voice_edit">Edit</string>
-    <string name="voice_pref_voice">语音合成设置</string>
-    <string name="voice_pref_voice_switch">是否开启播报</string>
-    <string name="voice_pref_voice_mode">使用离线合成</string>
-    <string name="voice_pref_voice_mode_summary">开启离在线混合,可能需要下载额外数据</string>
-    <string name="voice_pref_voice_network">移动数据下在线合成</string>
-    <string name="voice_pref_voice_network_summary">开启后可能会产生流量费用</string>
-    <string name="voice_pref_voice_overtime">允许超时</string>
-    <string name="voice_pref_voice_overtime_summary">默认1.2秒无回应则视为超时,开启后变为6秒</string>
-    <string name="voice_pref_voice_speaker">更换发音人</string>
+    <string name="voice_pref_voice">Voice settings</string>
+    <string name="voice_pref_voice_switch">Enable voice</string>
+    <string name="voice_pref_voice_mode">Allow offline TTS</string>
+    <string name="voice_pref_voice_mode_summary">Use a mode which mixes online and offline when no network, may require downloading additional data</string>
+    <string name="voice_pref_voice_network">Synthesize in mobile network</string>
+    <string name="voice_pref_voice_network_summary">Network traffic cost may occur after enabling</string>
+    <string name="voice_pref_voice_overtime">Allow timeout</string>
+    <string name="voice_pref_voice_overtime_summary">By default, 1.2s of no response is considered timeout, but it turns into 6s when enabling this.</string>
+    <string name="voice_pref_voice_speaker">Change speaker</string>
     <string-array name="voice_pref_voice_speaker_list">
-        <item>普通女声</item>
-        <item>普通男声</item>
-        <item>特别男声</item>
-        <item>情感男声(度逍遥)</item>
-        <item>情感儿童声(度丫丫)</item>
+        <item>Normal woman</item>
+        <item>Normal man</item>
+        <item>Special man</item>
+        <item>Emotional man</item>
+        <item>Emotional child</item>
     </string-array>
-    <string name="voice_pref_voice_text">更改朗读文本</string>
-    <string name="voice_pref_voice_volume">更改朗读音量</string>
-    <string name="voice_pref_voice_speed">更改朗读语速</string>
-    <string name="voice_pref_voice_pitch">更改朗读语调</string>
-    <string name="voice_pref_sound">音效设置</string>
-    <string name="voice_pref_sound_switch">是否开启摇一摇音效</string>
-    <string name="voice_pref_vibrator">震动设置</string>
-    <string name="voice_pref_vibrator_switch">是否开启震动效果</string>
-    <string name="voice_pref_vibrator_time">震动持续时间(毫秒)</string>
+    <string name="voice_pref_voice_text">Change speak text</string>
+    <string name="voice_pref_voice_volume">Change volume</string>
+    <string name="voice_pref_voice_speed">Change speed</string>
+    <string name="voice_pref_voice_pitch">Change pitch</string>
+    <string name="voice_pref_sound">Sound settings</string>
+    <string name="voice_pref_sound_switch">Enable shake sound</string>
+    <string name="voice_pref_vibrator">Vibration setting</string>
+    <string name="voice_pref_vibrator_switch">Enable Vibration</string>
+    <string name="voice_pref_vibrator_time">Vibration duration(millisecond)</string>
+    <string name="voice_pref_shake">Shake settings</string>
+    <string name="voice_pref_shake_sensitivity">Set shake sensitivity</string>
+
     <string name="code">Edit code</string>
-    <string name="update">Check update</string>
-    <string name="cannot_update">Can\'t to check update</string>
+    <string name="code_enable">Enable fake random algorithm</string>
+    <string name="code_hint">Fake random algorithm is written in JavaScript, write the code below, parameter list: list, range, result</string>
+    <string name="code_check">Check code</string>
+    <string name="code_invalid1">The code is invalid, please check.</string>
+    <string name="code_invalid2">The code is invalid, and it has been disabled.</string>
+
+    <string name="check_update">Check update</string>
     <string name="have_update">Your app have an update</string>
     <string name="no_update">Your app is up to date</string>
+    <string name="cannot_update">Can\'t check update</string>
+    <string name="update_content">Find new version: %s\nUpdate content: \n%s</string>
+    <string name="update">Update now</string>
+    <string name="update_later">Remine me next time</string>
+    <string name="do_not_remind">Don\'t remind me</string>
     <string name="download">Download update</string>
     <string name="download_update">The new app is downloading, please wait for a moment.</string>
+
+    <string name="feedback">Feedback</string>
+
     <string name="help">help</string>
+
     <string name="about">About</string>
-    <string name="view_license">View source license</string>
+    <string name="about_description">An application designed for teachers to call students randomly</string>
+    <string name="about_version">Version: %s</string>
+    <string name="about_group_connect">Connect us</string>
+    <string name="about_group_other">Some other things</string>
+    <string name="about_view_license">View source license</string>
+
+    <string name="flashlight">Flashlight</string>
 
     <string-array name="value_list">
         <item>0</item>

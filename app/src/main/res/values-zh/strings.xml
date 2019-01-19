@@ -1,31 +1,60 @@
 <resources>
     <string name="app_name">叫号</string>
+
     <string name="shake">摇一摇</string>
-    <string name="state">"百度语音合成引擎状态: "</string>
+    <string name="synthesize_state">"百度语音合成引擎状态: "</string>
+    <string name="synthesize_initializing">语音合成引擎正在初始化,请稍后再试</string>
+    <string name="synthesize_error">合成语音播放错误: %s</string>
+    <string name="synthesize_auth_error">语音合成引擎授权失败: %s</string>
+    <string name="synthesize_init_error">语音合成引擎初始化失败: %d</string>
     <string name="copyright">开发者吴晨 版权没有 仿冒不究</string>
     <string name="exit">再按一次以退出</string>
+
     <string name="list">集合</string>
     <string name="list_number">集合元素数量: %s</string>
     <string name="list_edit">编辑集合</string>
+    <string name="list_item_edit_title">更改名字</string>
+    <string name="list_item_edit_hint">请输入该元素更改后的名字</string>
+    <string name="list_item_delete">删除</string>
+    <string name="list_item_move">移动</string>
     <string name="list_menu_add">添加一个元素</string>
-    <string name="list_menu_clear">清空集合</string>
+    <string name="list_menu_add_title">输入名字</string>
+    <string name="list_menu_add_hint">请输入元素名字</string>
+    <string name="list_menu_add_empty">请输入名字</string>
+    <string name="list_menu_addmore">批量添加序号</string>
+    <string name="list_menu_addmore_title">输入个数</string>
+    <string name="list_menu_addmore_hint">请输入大于0的整数</string>
+    <string name="list_menu_addmore_invalid">无效数量, 范围为: 0 ~ %d</string>
+    <string name="list_menu_load">从文件读取</string>
+    <string name="list_menu_load_title">选择读取的文件</string>
+    <string name="list_menu_load_hint">输入逗号分隔符文件路径</string>
+    <string name="list_menu_load_choose">选择文件</string>
+    <string name="list_menu_load_empty">导入前清空集合</string>
+    <string name="list_menu_load_invalid">无效的逗号分隔符文件</string>
+    <string name="list_menu_load_no_file_manager">未安装文件管理器</string>
     <string name="list_menu_save">保存到文件</string>
-    <string name="list_menu_read">从文件读取</string>
-    <string name="list_menu_addmany">批量添加序号</string>
+    <string name="list_menu_save_title">选择保存的文件</string>
+    <string name="list_menu_save_hint">输入逗号分隔符文件路径</string>
+    <string name="list_menu_save_cover">强制覆盖文件</string>
+    <string name="list_menu_save_failed">无法写入文件, 文件可能已存在</string>
+    <string name="list_menu_clear">清空集合</string>
+    <string name="list_menu_clear_title">清空整个集合</string>
+    <string name="list_menu_clear_hint">真的要清空集合吗?</string>
     <string name="list_blank">请先向集合中添加元素</string>
     <string name="no_storage_permission">你必须同意存储权限才能使用存储功能</string>
+
     <string name="voice">语音</string>
     <string name="voice_text">朗读文本: %s</string>
     <string name="voice_text_default">请 %s 号同学回答问题</string>
     <string name="voice_edit">编辑语音</string>
     <string name="voice_pref_voice">语音合成设置</string>
     <string name="voice_pref_voice_switch">是否开启播报</string>
-    <string name="voice_pref_voice_mode">使用离线合成</string>
+    <string name="voice_pref_voice_mode">允许离线合成</string>
     <string name="voice_pref_voice_mode_summary">开启离在线混合,可能需要下载额外数据</string>
-    <string name="voice_pref_voice_network">移动数据下在线合成</string>
+    <string name="voice_pref_voice_network">允许移动数据在线合成</string>
     <string name="voice_pref_voice_network_summary">开启后可能会产生流量费用</string>
     <string name="voice_pref_voice_overtime">允许超时</string>
-    <string name="voice_pref_voice_overtime_summary">默认1.2秒无回应视为超时,开启后变为6秒</string>
+    <string name="voice_pref_voice_overtime_summary">默认1.2秒无响应视为超时,开启后为6秒</string>
     <string name="voice_pref_voice_speaker">更换发音人</string>
     <string-array name="voice_pref_voice_speaker_list">
         <item>普通女声</item>
@@ -43,15 +72,38 @@
     <string name="voice_pref_vibrator">震动设置</string>
     <string name="voice_pref_vibrator_switch">是否开启震动效果</string>
     <string name="voice_pref_vibrator_time">震动持续时间(毫秒)</string>
+    <string name="voice_pref_shake">摇一摇设置</string>
+    <string name="voice_pref_shake_sensitivity">设置晃动灵敏度</string>
+
     <string name="code">随机算法</string>
-    <string name="update">检查更新</string>
-    <string name="cannot_update">无法检查更新</string>
+    <string name="code_enable">是否开启伪随机算法</string>
+    <string name="code_hint">随机算法使用JavaScript编写,在下方直接写代码即可,参数列表:list, range, result</string>
+    <string name="code_check">检查语法</string>
+    <string name="code_invalid1">代码有错误,请检查伪随机算法</string>
+    <string name="code_invalid2">代码有错误,伪随机算法已禁用</string>
+
+    <string name="check_update">检查更新</string>
     <string name="have_update">发现新版本</string>
     <string name="no_update">当前已是最新版本</string>
+    <string name="cannot_update">无法检查更新</string>
+    <string name="update_content">检查到新版本: %s\n更新内容: \n%s</string>
+    <string name="update">更新</string>
+    <string name="update_later">下次再说</string>
+    <string name="do_not_remind">不再提醒</string>
     <string name="download">下载新版本</string>
     <string name="download_update">正在下载更新，请稍等片刻。</string>
+
+    <string name="feedback">反馈</string>
+
     <string name="help">帮助</string>
+
     <string name="about">关于</string>
-    <string name="view_license">阅读源代码开放许可</string>
+    <string name="about_description">一个专为教师设计的随机叫号小应用</string>
+    <string name="about_version">版本: %s</string>
+    <string name="about_group_connect">联系方式</string>
+    <string name="about_group_other">计算机迷的东西</string>
+    <string name="about_view_license">阅读源代码开放许可</string>
+
+    <string name="flashlight">手电筒</string>
 
 </resources>

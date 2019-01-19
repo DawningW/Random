@@ -70,7 +70,7 @@ import static io.github.dawncraft.qingchenw.random.ListActivity.DELIMITER;
 import static java.lang.System.currentTimeMillis;
 
 /**
- * 一个摇号的小应用
+ * 一个叫号的小应用
  * 感谢changer0的教程https://www.jianshu.com/p/bc5298651b30
  * <p>
  * Created by QingChenW on 2018/6/25
@@ -79,18 +79,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 {
     // 更新地址
     public static final String UPDATE_URL = "https://raw.githubusercontent.com/DawningW/Random/master/update.json";
-    // 语音合成引擎资源文件
-    public static final String VOICE_RES_PATH = Environment.getExternalStorageDirectory() + "/" + "BaiduTTS";
-    // JavaScript网页模版
-    // public static final String BASE_HTML = "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><script>%s</script></head></html>";
+    // 资源文件路径
+    public static final String RES_PATH = Environment.getExternalStorageDirectory() + "/" + "Random";
     // 权限
     public static final int REQUEST_CODE = 0;
     public static final String PERMISSIONS[] = {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_PHONE_STATE
     };
-    // 灵敏度
-    public static final int SENSITIVITY = 20;
 
     // 元素列表
     public static List<String> elements = new ArrayList<>();
@@ -109,6 +105,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // 震动
     public static boolean vibratorEnabled;
     public static long vibrateTime;
+    // 灵敏度
+    public static int sensitivity;
     // 随机算法
     public static boolean codeEnabled;
     public static String code;
@@ -121,6 +119,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private long exitTime = 0;
     // 网络状态判断
     private boolean hasNetwork = false;
+    // 语音合成引擎已初始化判断
+    private boolean isInitial = false;
     // 正在摇晃判断
     private boolean isShaking = false;
 
@@ -178,8 +178,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public Drawable greyImage;
     @BindDrawable(R.drawable.ic_circle_green_24dp)
     public Drawable greenImage;
-    @BindDrawable(R.drawable.ic_circle_yellow_24dp)
-    public Drawable yellowImage;
     @BindDrawable(R.drawable.ic_circle_red_24dp)
     public Drawable redImage;
 
@@ -211,8 +209,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // 初始化控件
         listText.setText(String.format(getString(R.string.list_number), String.valueOf(elements.size())));
         voiceText.setText(String.format(getString(R.string.voice_text), showText));
-        if(voiceEnabled) stateImage.setImageDrawable(greenImage);
-        else stateImage.setImageDrawable(greyImage);
         // 获取网络管理器
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivityManager != null)
@@ -236,29 +232,50 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
         // 获取震动
-        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        // 获取音效
-        soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 5);
-        openAudio = soundPool.load(this, R.raw.open,1);
-        closeAudio = soundPool.load(this, R.raw.close, 1);
-        // 初始化语音合成引擎
-        speechSynthesizer = new MySynthesizer(this);
-        synthesizerConfig.setListener(MainActivity.this);
-        new Thread()
+        if (vibratorEnabled)
         {
-            @Override
-            public void run()
+            vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        }
+        // 获取音效
+        if (soundEnabled)
+        {
+            soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 5);
+            openAudio = soundPool.load(this, R.raw.open,1);
+            closeAudio = soundPool.load(this, R.raw.close, 1);
+        }
+        // 初始化语音合成引擎
+        if (voiceEnabled)
+        {
+            speechSynthesizer = new MySynthesizer(this);
+            synthesizerConfig.setListener(MainActivity.this);
+            new Thread()
             {
-                super.run();
-                if (speechSynthesizer != null)
+                @Override
+                public void run()
                 {
-                    speechSynthesizer.init(synthesizerConfig);
+                    super.run();
+                    if (speechSynthesizer != null)
+                    {
+                        boolean available = speechSynthesizer.init(synthesizerConfig);
+                        isInitial = true;
+                        runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                stateImage.setImageDrawable(available ? greenImage : redImage);
+                            }
+                        });
+                    }
                 }
-            }
-        }.start();
+            }.start();
+        }
         // 初始化脚本引擎
-        javaScriptContext = org.mozilla.javascript.Context.enter();
-        javaScriptContext.setOptimizationLevel(-1);
+        if (codeEnabled)
+        {
+            javaScriptContext = org.mozilla.javascript.Context.enter();
+            javaScriptContext.setOptimizationLevel(-1);
+        }
         // 检查更新
         if (updateEnabled) checkUpdate();
     }
@@ -285,12 +302,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // 否则界面退出后摇一摇依旧生效
             sensorManager.unregisterListener(this);
         }
+        // 释放音效池
+        if (soundPool != null)
+        {
+            soundPool.release();
+            soundPool = null;
+        }
         // 停止语音合成引擎
         if (speechSynthesizer != null)
         {
             speechSynthesizer.stop();
             speechSynthesizer.release();
             speechSynthesizer = null;
+            isInitial = false;
+            stateImage.setImageDrawable(greyImage);
         }
         // 释放脚本引擎
         if (javaScriptContext != null)
@@ -310,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // 获取三个方向值
             for (float value : sensorEvent.values)
             {
-                if (Math.abs(value) > SENSITIVITY)
+                if (Math.abs(value) > sensitivity)
                 {
                     start();
                     break;
@@ -332,17 +357,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSynthesizeFinish(String s) {}
 
     @Override
-    public void onSpeechStart(String s)
-    {
-        runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                stateImage.setImageDrawable(yellowImage);
-            }
-        });
-    }
+    public void onSpeechStart(String s) {}
 
     @Override
     public void onSpeechProgressChanged(String s, int i) {}
@@ -355,7 +370,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void run()
             {
-                stateImage.setImageDrawable(greenImage);
                 if(isShaking)
                 {
                     stop();
@@ -374,7 +388,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             {
                 stateImage.setImageDrawable(redImage);
                 Utils.toast(MainActivity.this,
-                        "合成语音播放错误: " + speechError.toString(), Toast.LENGTH_LONG);
+                        String.format(getString(R.string.synthesize_error), speechError.toString()),
+                        Toast.LENGTH_LONG);
             }
         });
     }
@@ -425,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // 集合设置
         elements.clear();
         String toSplit = sharedPreferences.getString("elements", "");
-        if (!toSplit.equals(""))
+        if (toSplit != null && !toSplit.isEmpty())
         {
             Collections.addAll(elements, toSplit.split(String.valueOf(DELIMITER)));
         }
@@ -442,8 +457,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         String speakerType = sharedPreferences.getString("voice_speaker", "0");
         params.put(SpeechSynthesizer.PARAM_SPEAKER, speakerType);
         offlineResource = new OfflineResource(this, speakerType);
-        params.put(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, offlineResource.getTextFilename());
-        params.put(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, offlineResource.getModelFilename());
+        params.put(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, offlineResource.getTextFilepath());
+        params.put(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, offlineResource.getModelFilepath());
         showText = sharedPreferences.getString("voice_text", getString(R.string.voice_text_default));
         params.put(SpeechSynthesizer.PARAM_VOLUME, String.valueOf(sharedPreferences.getInt("voice_volume", 5)));
         params.put(SpeechSynthesizer.PARAM_SPEED, String.valueOf(sharedPreferences.getInt("voice_speed", 5)));
@@ -454,9 +469,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // 震动设置
         vibratorEnabled = sharedPreferences.getBoolean("vibrator_switch", true);
         vibrateTime = sharedPreferences.getInt("vibrator_time", 300);
+        // 摇晃设置
+        sensitivity = sharedPreferences.getInt("sensitivity", 20);
         // 随机算法
         codeEnabled =  sharedPreferences.getBoolean("custom_code", false);
-        code = CodeActivity.formatCode(Utils.readFile(VOICE_RES_PATH + "/" + CodeActivity.FILE_NAME));
+        code = CodeActivity.formatCode(Utils.readFile(RES_PATH + "/" + CodeActivity.FILE_NAME));
         // 更新设置
         updateEnabled = sharedPreferences.getBoolean("update", true);
     }
@@ -502,6 +519,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 checkUpdate();
                 return true;
             }
+            case R.id.action_feedback:
+            {
+                // TODO 反馈
+                Utils.toast(this, "我连服务器都没有,怎么反馈");
+                return true;
+            }
             case R.id.action_help:
             {
                 startActivity(new Intent(this, HelpActivity.class));
@@ -510,6 +533,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case R.id.action_about:
             {
                 startActivity(new Intent(this, AboutActivity.class));
+                return true;
+            }
+            case R.id.action_flashlight:
+            {
+                startActivity(new Intent(this, FlashlightActivity.class));
                 return true;
             }
         }
@@ -586,19 +614,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         final TextView textView = new TextView(MainActivity.this);
         try
         {
-            textView.setText(String.format("检查到新版本: %s\n更新内容: \n%s",
+            textView.setText(String.format(getString(R.string.update_content),
                     update.getString("versionName"), update.getString("description")));
         } catch (JSONException e) {
             e.printStackTrace();
         }
         linearLayout.addView(textView);
         final CheckBox checkBox = new CheckBox(MainActivity.this);
-        checkBox.setText("不再提醒");
+        checkBox.setText(R.string.do_not_remind);
         checkBox.setChecked(!updateEnabled);
         linearLayout.addView(checkBox);
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle(R.string.have_update).setCancelable(false).setView(linearLayout);
-        builder.setPositiveButton("更新", new DialogInterface.OnClickListener()
+        builder.setPositiveButton(R.string.update, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface dialog, int which)
@@ -606,7 +634,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 downLoadUpdate();
             }
         });
-        builder.setNegativeButton("下次再说", new DialogInterface.OnClickListener()
+        builder.setNegativeButton(R.string.update_later, new DialogInterface.OnClickListener()
         {
             @Override
             public void onClick(DialogInterface dialog, int which)
@@ -626,8 +654,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
-                if (isChecked) dialog.getButton(-2).setText("不再提醒");
-                else dialog.getButton(-2).setText("下次再说");
+                if (isChecked) dialog.getButton(-2).setText(R.string.do_not_remind);
+                else dialog.getButton(-2).setText(R.string.update_later);
             }
         });
         dialog.show();
@@ -651,7 +679,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 {
                     // 更新地址
                     String apkUrl = update.getString("updateUrl");
-                    File file = new File(VOICE_RES_PATH, "update.apk");
+                    File file = new File(RES_PATH, "update.apk");
                     if (!file.exists() || !Objects.equals(Utils.fileToMD5(file), update.getString("md5")))
                     {
                         // 下载APK
@@ -670,36 +698,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void start()
     {
-        int size = elements.size();
-        if(size > 0)
+        if (isInitial)
         {
-            isShaking = true;
-            // 生成文本
-            String element = elements.get(generate(size));
-            String text = String.format(showText, element);
-            // 设置中心文本
-            outputText.setText(text);
-            // 隐藏中心按钮
-            imageButton.setVisibility(View.GONE);
-            // 显示这两条线
-            topDivider.setVisibility(View.VISIBLE);
-            bottomDivider.setVisibility(View.VISIBLE);
-            // 播放动画
-            topLayout.startAnimation(goUpAnim);
-            bottomLayout.startAnimation(goDownAnim);
-            // 播放提示音
-            if(soundEnabled)
-                soundPool.play(openAudio, 1, 1, 0, 0, 1);
-            // 发出振动
-            if(vibratorEnabled)
-                vibrator.vibrate(vibrateTime);
-            // 播放语音
-            if(voiceEnabled)
-                speechSynthesizer.speak(text, "");
+            int size = elements.size();
+            if (size > 0)
+            {
+                isShaking = true;
+                // 生成文本
+                String element = elements.get(generate(size));
+                String text = String.format(showText, element);
+                // 设置中心文本
+                outputText.setText(text);
+                // 隐藏中心按钮
+                imageButton.setVisibility(View.GONE);
+                // 显示这两条线
+                topDivider.setVisibility(View.VISIBLE);
+                bottomDivider.setVisibility(View.VISIBLE);
+                // 播放动画
+                topLayout.startAnimation(goUpAnim);
+                bottomLayout.startAnimation(goDownAnim);
+                // 播放提示音
+                if (soundEnabled)
+                    soundPool.play(openAudio, 1, 1, 0, 0, 1);
+                // 发出振动
+                if (vibratorEnabled)
+                    vibrator.vibrate(vibrateTime);
+                // 播放语音
+                if (voiceEnabled)
+                    speechSynthesizer.speak(text, "");
+            }
+            else
+            {
+                Utils.toast(this, R.string.list_blank);
+            }
         }
         else
         {
-            Utils.toast(this, R.string.list_blank);
+            Utils.toast(this, R.string.synthesize_initializing);
         }
     }
 
@@ -707,12 +742,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     {
         isShaking = false;
         // 停止语音
-        speechSynthesizer.stop();
+        if (voiceEnabled)
+            speechSynthesizer.stop();
         // 播放动画
         topLayout.startAnimation(backUpAnim);
         bottomLayout.startAnimation(backDownAnim);
         // 播放提示音
-        if(soundEnabled)
+        if (soundEnabled)
             soundPool.play(closeAudio, 1, 1, 0, 0, 1);
         // 延时执行
         imageButton.postDelayed(new Runnable()
@@ -749,7 +785,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     return newResult;
                 }
             }
-            Utils.toast(this, "The code is invalid, please check.");
+            Utils.toast(this, R.string.code_invalid1);
         }
         return result;
     }

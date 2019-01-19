@@ -7,7 +7,11 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/action_update"
-        android:title="@string/update"
+        android:title="@string/check_update"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_feedback"
+        android:title="@string/feedback"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_help"
@@ -16,5 +20,9 @@
     <item
         android:id="@+id/action_about"
         android:title="@string/about"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_flashlight"
+        android:title="@string/flashlight"
         app:showAsAction="never" />
 </menu>

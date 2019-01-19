@@ -10,7 +10,6 @@ import java.util.HashMap;
  *
  * Created by fujiayi on 2017/5/19.
  */
-
 public class OfflineResource
 {
     // f7 离线女声
@@ -29,12 +28,17 @@ public class OfflineResource
     private String textFilename;
     private String modelFilename;
 
+    // TODO 移入MySynthesizer如果有必要的话
     public OfflineResource(Context context, String voiceType)
     {
-        context = context.getApplicationContext();
-        this.assets = context.getApplicationContext().getAssets();
-        this.destPath = Utils.createDir(MainActivity.VOICE_RES_PATH);
+        assets = context.getApplicationContext().getAssets();
+        destPath = Utils.createDir(MainActivity.RES_PATH);
         setOfflineVoiceType(voiceType);
+    }
+
+    public String getTextFilename()
+    {
+        return textFilename;
     }
 
     public String getModelFilename()
@@ -42,9 +46,14 @@ public class OfflineResource
         return modelFilename;
     }
 
-    public String getTextFilename()
+    public String getTextFilepath()
     {
-        return textFilename;
+        return destPath + "/" + getTextFilename();
+    }
+
+    public String getModelFilepath()
+    {
+        return destPath + "/" + getModelFilename();
     }
 
     public void setOfflineVoiceType(String voiceType)
@@ -61,19 +70,17 @@ public class OfflineResource
             model = "bd_etts_common_speech_as_mand_eng_high_am_v3.0.0_20170516.dat";
         } else {
             model = "bd_etts_common_speech_f7_mand_eng_high_am-mix_v3.0.0_20170512.dat";
-            //throw new RuntimeException("voice type is not in list");
+            // throw new RuntimeException("Voice type is not in the list");
         }
+
         textFilename = copyAssetsFile(text);
         modelFilename = copyAssetsFile(model);
     }
 
     private String copyAssetsFile(String sourceFilename)
     {
-        String destFilename = destPath + "/" + sourceFilename;
-        boolean recover = false;
-        Boolean existed = mapInitied.get(sourceFilename);
-        if (existed == null || !existed) recover = true;
-        Utils.copyFromAssets(assets, sourceFilename, destFilename, recover);
-        return destFilename;
+        // 原来有一个半成品缓存,被我移除了
+        Utils.copyFromAssets(assets, sourceFilename, destPath + "/" + sourceFilename, false);
+        return sourceFilename;
     }
 }

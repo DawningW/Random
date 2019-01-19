@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.v4.content.FileProvider;
+import android.util.TypedValue;
 import android.widget.Toast;
 
 import java.io.BufferedInputStream;
@@ -33,6 +34,11 @@ import java.security.MessageDigest;
 
 public class Utils
 {
+    public static int dp2px(Context context, int value)
+    {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, context.getResources().getDisplayMetrics());
+    }
+
     public static PackageInfo getPackageInfo(Context context)
     {
         PackageManager packageManager = context.getPackageManager();
@@ -43,6 +49,11 @@ public class Utils
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static int between(int min, int num, int max)
+    {
+        return Math.max(Math.min(num, max), min);
     }
 
     @NonNull

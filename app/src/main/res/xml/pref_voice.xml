@@ -88,4 +88,14 @@
             android:selectAllOnFocus="true"
             android:title="@string/voice_pref_vibrator_time" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/voice_pref_shake">
+        <io.github.dawncraft.qingchenw.random.IntEditTextPreference
+            android:defaultValue="20"
+            android:inputType="numberSigned"
+            android:key="sensitivity"
+            android:numeric="integer"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:title="@string/voice_pref_shake_sensitivity" />
+    </PreferenceCategory>
 </PreferenceScreen>

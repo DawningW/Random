@@ -34,7 +34,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_corner_up"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                 android:id="@+id/linearLayout1"
@@ -182,7 +185,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="0"
                     android:singleLine="true"
-                    android:text="@string/state"
+                    android:text="@string/synthesize_state"
                     android:textColor="@android:color/black"
                     android:textSize="20sp" />
 
@@ -191,7 +194,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="0"
-                    android:contentDescription="@string/state"
+                    android:contentDescription="@string/synthesize_state"
                     android:scaleType="fitCenter"
                     app:srcCompat="@drawable/ic_circle_grey_24dp" />
             </LinearLayout>

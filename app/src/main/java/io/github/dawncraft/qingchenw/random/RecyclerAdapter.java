@@ -11,7 +11,6 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -47,30 +46,28 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
             public void onClick(final View view)
             {
                 final EditText editText = new EditText(view.getContext());
-                editText.setHint("更改该元素名字");
+                editText.setHint(R.string.list_item_edit_hint);
                 editText.setText(holder.nameText.getText());
                 AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-                builder.setTitle("更改名字").setView(editText);
-                builder.setPositiveButton("确定", new DialogInterface.OnClickListener()
+                builder.setTitle(R.string.list_item_edit_title).setView(editText);
+                builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
                 {
                     @Override
                     public void onClick(DialogInterface dialog, int which)
                     {
-                        changeItem(holder.getLayoutPosition(), editText.getText().toString());
+                        String text = editText.getText().toString();
+                        if (!text.isEmpty())
+                        {
+                            changeItem(holder.getLayoutPosition(), text);
+                        }
+                        else
+                        {
+                            Utils.toast(context, R.string.list_menu_add_empty);
+                        }
                     }
                 });
-                builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        dialog.dismiss();
-                    }
-                });
-                Dialog dialog = builder.create();
-                dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                dialog.show();
+                builder.setNegativeButton(android.R.string.cancel, null);
+                builder.create().show();
             }
         });
         holder.deleteButton.setOnClickListener(new View.OnClickListener()
@@ -96,12 +93,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
         notifyItemInserted(position);
     }
 
-    public void insertItemRange(int fromPosition, int toPosition)
+    public void insertItems(int position, List<String> items)
     {
-        for (int i = fromPosition; i <= toPosition ; ++i)
-            list.add(String.valueOf(i));
-        int count = toPosition - fromPosition;
-        notifyItemRangeInserted(fromPosition, count);
+        list.addAll(items);
+        notifyItemRangeInserted(position, items.size());
     }
 
     public void changeItem(int position, String name)
@@ -140,7 +135,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
         public ImageButton deleteButton;
         public ImageButton moveButton;
 
-        public Holder(@NonNull View itemView)
+        Holder(@NonNull View itemView)
         {
             super(itemView);
             itemLayout = itemView.findViewById(R.id.itemLayout);
@@ -149,12 +144,12 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
             moveButton = itemView.findViewById(R.id.moveButton);
         }
 
-        public void select()
+        void select()
         {
             itemLayout.setBackgroundColor(Color.LTGRAY);
         }
 
-        public void clear()
+        void clear()
         {
             itemLayout.setBackgroundColor(Color.WHITE);
         }

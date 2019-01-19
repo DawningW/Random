@@ -36,6 +36,7 @@ public class VoiceActivity extends AppCompatPreferenceActivity
         bindPreferenceSummaryToStrValue(findPreference("voice_speaker"));
         bindPreferenceSummaryToStrValue(findPreference("voice_text"));
         bindPreferenceSummaryToIntValue(findPreference("vibrator_time"));
+        bindPreferenceSummaryToIntValue(findPreference("sensitivity"));
     }
 
     @Override

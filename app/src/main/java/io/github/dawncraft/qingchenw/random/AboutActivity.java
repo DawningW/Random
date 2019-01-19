@@ -1,40 +1,58 @@
 package io.github.dawncraft.qingchenw.random;
 
-import android.content.Intent;
 import android.content.pm.PackageInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
+import mehdi.sakout.aboutpage.AboutPage;
+import mehdi.sakout.aboutpage.Element;
 
 public class AboutActivity extends AppCompatActivity
 {
-    // 更新地址
-    public static final String WEBSITE_URL = "https://github.com/DawningW/Random";
     // 开源协议
     public static final String LICENSE = "license.txt";
 
     // 控件
-    @BindView(R.id.versionText)
-    public TextView versionText;
-    @BindView(R.id.updateText)
-    public TextView updateText;
-    @BindView(R.id.websiteText)
-    public TextView websiteText;
+    public View aboutView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_about);
+        PackageInfo info = Utils.getPackageInfo(this);
+        String version = info != null ? info.versionName : getString(android.R.string.unknownName);
+        AboutPage aboutPage = new AboutPage(this)
+                .isRTL(false)
+                .setImage(R.mipmap.ic_launcher)
+                .setDescription(getString(R.string.about_description))
+                .addItem(new Element().setTitle(getString(R.string.app_name)))
+                .addItem(new Element().setTitle(String.format(getString(R.string.about_version), version)))
+                .addItem(new Element()
+                        .setTitle(getString(MainActivity.haveUpdate ? R.string.have_update : R.string.no_update)))
+                .addItem((new Element()).setTitle(getString(R.string.copyright)))
+                .addGroup(getString(R.string.about_group_connect))
+                .addWebsite("https://github.com/DawningW/Random")
+                .addEmail("1132694623@qq.com")
+                .addGitHub("DawningW")
+                .addGroup(getString(R.string.about_group_other))
+                .addItem(new Element()
+                        .setTitle(getString(R.string.about_view_license))
+                        .setOnClickListener(new View.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View v)
+                            {
+                                licenseDialog();
+                            }
+                        }));
+        aboutView = aboutPage.create();
+        setContentView(aboutView);
         if(getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // 初始化ButterKnife
@@ -45,27 +63,6 @@ public class AboutActivity extends AppCompatActivity
     protected void onStart()
     {
         super.onStart();
-        PackageInfo info = Utils.getPackageInfo(this);
-        if (info != null) versionText.setText(info.versionName);
-        updateText.setText(MainActivity.haveUpdate ? R.string.have_update : R.string.no_update);
-        websiteText.setText(WEBSITE_URL);
-    }
-
-    public void onClicked(View view)
-    {
-        switch(view.getId())
-        {
-            case R.id.websiteText:
-            {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(WEBSITE_URL)));
-                break;
-            }
-            case R.id.licenseButton:
-            {
-                licenseDialog();
-                break;
-            }
-        }
     }
 
     public void licenseDialog()
@@ -78,10 +75,9 @@ public class AboutActivity extends AppCompatActivity
             e.printStackTrace();
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.view_license).setCancelable(false);
+        builder.setTitle(R.string.about_view_license).setCancelable(false);
         builder.setMessage(license);
-        builder.setPositiveButton("确定", null);
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        builder.setPositiveButton(android.R.string.ok, null);
+        builder.create().show();
     }
 }
