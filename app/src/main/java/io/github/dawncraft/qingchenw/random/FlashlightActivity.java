@@ -1,56 +1,46 @@
 package io.github.dawncraft.qingchenw.random;
 
-import android.app.Activity;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 
-public class FlashlightActivity extends Activity
+import butterknife.ButterKnife;
+
+public class FlashlightActivity extends AppCompatActivity
 {
-	boolean islight = false;
-	Camera camera;
+    // 是否开启手电筒
+	private boolean islighting = false;
+	// 相机
+	public Camera camera;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
     {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_flashlight);
-
-        camera = Camera.open();
-		
-		Button button = findViewById(R.id.toggleButton1);
-		button.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View v)
-            {
-                if (!islight)
-                {
-                    Parameters parameter = camera.getParameters();
-                    parameter.setFlashMode(Parameters.FLASH_MODE_TORCH);
-                    camera.setParameters(parameter);
-
-                    islight = true;
-                }
-                else
-                {
-                    Parameters parameter = camera.getParameters();
-                    parameter.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-                    camera.setParameters(parameter);
-
-                    islight = false;
-                }
-		    }
-        });
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // 初始化ButterKnife
+        ButterKnife.bind(this);
 	}
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        // 初始化相机
+        camera = Camera.open();
+    }
 
     @Override
     protected void onPause()
     {
         super.onPause();
+        // 释放相机
         camera.release();
     }
 
@@ -71,4 +61,12 @@ public class FlashlightActivity extends Activity
 		}
 		return super.onOptionsItemSelected(item);
 	}
+
+    public void onClicked(View v)
+    {
+        Parameters parameter = camera.getParameters();
+        parameter.setFlashMode(islighting ? Parameters.FLASH_MODE_OFF : Parameters.FLASH_MODE_TORCH);
+        camera.setParameters(parameter);
+        islighting = !islighting;
+    }
 }

@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // 权限
     public static final int REQUEST_CODE = 0;
     public static final String PERMISSIONS[] = {
+            Manifest.permission.CAMERA,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_PHONE_STATE
     };
