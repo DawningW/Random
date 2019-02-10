@@ -4,7 +4,7 @@
 
 现已遵循[MIT协议](https://github.com/DawningW/Random/blob/master/LICENSE)开源
 
-![主界面](./screenshot.jpg)
+![主界面](./doc/screenshot.jpg)
 
 ## 它有什么特点
 - 由百度语音合成引擎强力支持
