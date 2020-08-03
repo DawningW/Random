@@ -22,8 +22,11 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
+
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="io.github.dawncraft.qingchenw.random.FileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
@@ -40,7 +43,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ListActivity"
+            android:name=".ui.ListActivity"
             android:label="@string/list"
             android:parentActivityName=".MainActivity">
             <meta-data
@@ -48,7 +51,7 @@
                 android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
         </activity>
         <activity
-            android:name=".VoiceActivity"
+            android:name=".ui.VoiceActivity"
             android:label="@string/voice"
             android:parentActivityName=".MainActivity">
             <meta-data
@@ -56,7 +59,7 @@
                 android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
         </activity>
         <activity
-            android:name=".CodeActivity"
+            android:name=".ui.CodeActivity"
             android:label="@string/code"
             android:parentActivityName=".MainActivity">
             <meta-data
@@ -64,7 +67,7 @@
                 android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
         </activity>
         <activity
-            android:name=".HelpActivity"
+            android:name=".ui.HelpActivity"
             android:label="@string/help"
             android:parentActivityName=".MainActivity">
             <meta-data
@@ -72,7 +75,7 @@
                 android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
         </activity>
         <activity
-            android:name=".AboutActivity"
+            android:name=".ui.AboutActivity"
             android:label="@string/about"
             android:parentActivityName=".MainActivity">
             <meta-data
@@ -80,8 +83,8 @@
                 android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
         </activity>
         <activity
-            android:name=".FlashlightActivity"
-            android:label="手电筒"
+            android:name=".ui.FlashlightActivity"
+            android:label="Flashlight"
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

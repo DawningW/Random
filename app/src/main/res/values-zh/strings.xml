@@ -59,7 +59,6 @@
     <string-array name="voice_pref_voice_speaker_list">
         <item>普通女声</item>
         <item>普通男声</item>
-        <item>特别男声</item>
         <item>情感男声(度逍遥)</item>
         <item>情感儿童声(度丫丫)</item>
     </string-array>

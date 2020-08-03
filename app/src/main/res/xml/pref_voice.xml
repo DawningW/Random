@@ -1,42 +1,51 @@
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <PreferenceCategory android:title="@string/voice_pref_voice">
+
+    <PreferenceCategory
+        android:title="@string/voice_pref_voice"
+        app:iconSpaceReserved="false">
+
         <SwitchPreference
             android:layout_height="wrap_content"
             android:defaultValue="true"
             android:key="voice_switch"
-            android:title="@string/voice_pref_voice_switch" />
+            android:title="@string/voice_pref_voice_switch"
+            app:iconSpaceReserved="false"/>
         <SwitchPreference
             android:layout_height="wrap_content"
             android:defaultValue="false"
             android:dependency="voice_switch"
             android:key="voice_mode"
             android:summary="@string/voice_pref_voice_mode_summary"
-            android:title="@string/voice_pref_voice_mode" />
+            android:title="@string/voice_pref_voice_mode"
+            app:iconSpaceReserved="false"/>
         <SwitchPreference
             android:layout_height="wrap_content"
             android:defaultValue="false"
             android:dependency="voice_switch"
             android:key="voice_network"
             android:summary="@string/voice_pref_voice_network_summary"
-            android:title="@string/voice_pref_voice_network" />
+            android:title="@string/voice_pref_voice_network"
+            app:iconSpaceReserved="false"/>
         <SwitchPreference
             android:layout_height="wrap_content"
             android:defaultValue="false"
             android:dependency="voice_switch"
             android:key="voice_overtime"
             android:summary="@string/voice_pref_voice_overtime_summary"
-            android:title="@string/voice_pref_voice_overtime" />
+            android:title="@string/voice_pref_voice_overtime"
+            app:iconSpaceReserved="false"/>
         <ListPreference
             android:defaultValue="0"
             android:dependency="voice_switch"
             android:entries="@array/voice_pref_voice_speaker_list"
             android:entryValues="@array/value_list"
             android:key="voice_speaker"
-            android:title="@string/voice_pref_voice_speaker" />
+            android:title="@string/voice_pref_voice_speaker"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
         <EditTextPreference
-            android:capitalize="words"
             android:defaultValue="@string/voice_text_default"
             android:dependency="voice_switch"
             android:inputType="textCapWords"
@@ -44,58 +53,86 @@
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="@string/voice_pref_voice_text" />
-        <io.github.dawncraft.qingchenw.random.SeekBarPreference
+            android:title="@string/voice_pref_voice_text"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
+        <SeekBarPreference
             android:defaultValue="5"
             android:dependency="voice_switch"
             android:key="voice_volume"
             android:title="@string/voice_pref_voice_volume"
-            app:maxValue="15"
-            app:minValue="0" />
-        <io.github.dawncraft.qingchenw.random.SeekBarPreference
+            android:max="15"
+            app:min="0"
+            app:iconSpaceReserved="false"
+            app:showSeekBarValue="true" />
+        <SeekBarPreference
             android:defaultValue="5"
             android:dependency="voice_switch"
             android:key="voice_speed"
             android:title="@string/voice_pref_voice_speed"
-            app:maxValue="15"
-            app:minValue="0" />
-        <io.github.dawncraft.qingchenw.random.SeekBarPreference
+            android:max="15"
+            app:min="0"
+            app:iconSpaceReserved="false"
+            app:showSeekBarValue="true" />
+        <SeekBarPreference
             android:defaultValue="5"
             android:dependency="voice_switch"
             android:key="voice_pitch"
             android:title="@string/voice_pref_voice_pitch"
-            app:maxValue="15"
-            app:minValue="0" />
+            android:max="15"
+            app:min="0"
+            app:iconSpaceReserved="false"
+            app:showSeekBarValue="true" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/voice_pref_sound">
+
+    <PreferenceCategory
+        android:title="@string/voice_pref_sound"
+        app:iconSpaceReserved="false">
+
         <SwitchPreference
             android:defaultValue="true"
             android:key="sound_switch"
-            android:title="@string/voice_pref_sound_switch" />
+            android:title="@string/voice_pref_sound_switch"
+            app:iconSpaceReserved="false" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/voice_pref_vibrator">
+
+    <PreferenceCategory
+        android:title="@string/voice_pref_vibrator"
+        app:iconSpaceReserved="false">
+
         <SwitchPreference
             android:defaultValue="true"
             android:key="vibrator_switch"
-            android:title="@string/voice_pref_vibrator_switch" />
-        <io.github.dawncraft.qingchenw.random.IntEditTextPreference
+            android:title="@string/voice_pref_vibrator_switch"
+            app:iconSpaceReserved="false" />
+
+        <EditTextPreference
             android:defaultValue="300"
             android:dependency="vibrator_switch"
             android:inputType="numberSigned"
             android:key="vibrator_time"
-            android:numeric="integer"
             android:maxLines="1"
             android:selectAllOnFocus="true"
-            android:title="@string/voice_pref_vibrator_time" />
+            android:title="@string/voice_pref_vibrator_time"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/voice_pref_shake">
-        <io.github.dawncraft.qingchenw.random.IntEditTextPreference
+
+    <PreferenceCategory
+        android:title="@string/voice_pref_shake"
+        app:iconSpaceReserved="false">
+
+        <EditTextPreference
             android:defaultValue="20"
             android:inputType="numberSigned"
             android:key="sensitivity"
-            android:numeric="integer"
             android:maxLines="1"
             android:selectAllOnFocus="true"
-            android:title="@string/voice_pref_shake_sensitivity" />
+            android:title="@string/voice_pref_shake_sensitivity"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
     </PreferenceCategory>
+
 </PreferenceScreen>

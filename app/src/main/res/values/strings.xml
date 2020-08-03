@@ -5,8 +5,8 @@
     <string name="synthesize_state">Voice state: </string>
     <string name="synthesize_initializing">The TTS engine is initializing. Please try again later.</string>
     <string name="synthesize_error">Synthesized speech play error: %s</string>
-    <string name="synthesize_auth_error">The TTS engine authorization fails: %s</string>
-    <string name="synthesize_init_error">The TTS engine initialization fails: %d</string>
+    <string name="synthesize_auth_error">The TTS engine authorization failed: %s</string>
+    <string name="synthesize_init_error">The TTS engine initialization failed: %d</string>
     <string name="copyright">Made by QingChenW</string>
     <string name="exit">Press again to exit</string>
 
@@ -50,7 +50,7 @@
     <string name="voice_pref_voice">Voice settings</string>
     <string name="voice_pref_voice_switch">Enable voice</string>
     <string name="voice_pref_voice_mode">Allow offline TTS</string>
-    <string name="voice_pref_voice_mode_summary">Use a mode which mixes online and offline when no network, may require downloading additional data</string>
+    <string name="voice_pref_voice_mode_summary">Use a mode which mixes online and offline when no network, but it may require downloading additional data</string>
     <string name="voice_pref_voice_network">Synthesize in mobile network</string>
     <string name="voice_pref_voice_network_summary">Network traffic cost may occur after enabling</string>
     <string name="voice_pref_voice_overtime">Allow timeout</string>
@@ -59,7 +59,6 @@
     <string-array name="voice_pref_voice_speaker_list">
         <item>Normal woman</item>
         <item>Normal man</item>
-        <item>Special man</item>
         <item>Emotional man</item>
         <item>Emotional child</item>
     </string-array>
@@ -88,7 +87,7 @@
     <string name="cannot_update">Can\'t check update</string>
     <string name="update_content">Find new version: %s\nUpdate content: \n%s</string>
     <string name="update">Update now</string>
-    <string name="update_later">Remine me next time</string>
+    <string name="update_later">Remind me next time</string>
     <string name="do_not_remind">Don\'t remind me</string>
     <string name="download">Download update</string>
     <string name="download_update">The new app is downloading, please wait for a moment.</string>

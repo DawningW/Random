@@ -21,13 +21,6 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Vibrator;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,6 +33,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.preference.PreferenceManager;
+
 import com.baidu.tts.client.SpeechError;
 import com.baidu.tts.client.SpeechSynthesizer;
 import com.baidu.tts.client.SpeechSynthesizerListener;
@@ -47,26 +47,34 @@ import com.baidu.tts.client.TtsMode;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.Scriptable;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 
 import butterknife.BindAnim;
 import butterknife.BindDrawable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.github.dawncraft.qingchenw.random.tts.MySynthesizer;
+import io.github.dawncraft.qingchenw.random.tts.OfflineResource;
+import io.github.dawncraft.qingchenw.random.ui.AboutActivity;
+import io.github.dawncraft.qingchenw.random.ui.CodeActivity;
+import io.github.dawncraft.qingchenw.random.ui.FlashlightActivity;
+import io.github.dawncraft.qingchenw.random.ui.HelpActivity;
+import io.github.dawncraft.qingchenw.random.ui.ListActivity;
+import io.github.dawncraft.qingchenw.random.ui.VoiceActivity;
+import io.github.dawncraft.qingchenw.random.utils.FileUtils;
+import io.github.dawncraft.qingchenw.random.utils.RandomEngine;
+import io.github.dawncraft.qingchenw.random.utils.SystemUtils;
+import io.github.dawncraft.qingchenw.random.utils.WebUtils;
 
 import static android.os.Process.killProcess;
 import static android.os.Process.myPid;
-import static io.github.dawncraft.qingchenw.random.ListActivity.DELIMITER;
+import static io.github.dawncraft.qingchenw.random.ui.ListActivity.DELIMITER;
 import static java.lang.System.currentTimeMillis;
 
 /**
@@ -83,22 +91,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public static final String RES_PATH = Environment.getExternalStorageDirectory() + "/" + "Random";
     // 权限
     public static final int REQUEST_CODE = 0;
-    public static final String PERMISSIONS[] = {
+    public static final String[] PERMISSIONS = {
             Manifest.permission.CAMERA,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_PHONE_STATE
     };
 
     // 元素列表
-    public static List<String> elements = new ArrayList<>();
+    public static ArrayList<String> elements = new ArrayList<>();
     // 文本
     public static String showText;
     // 语音合成
     public static boolean voiceEnabled;
-    public static MySynthesizer.Config synthesizerConfig = new MySynthesizer.Config(
-            "11443617",
-            "iNmAH7IzeHm2HT6eNmYIu5OF",
-            "yv3LkAYkrc6Gw32IG1UB12WBlwY5AheX");
+    public static MySynthesizer.Config synthesizerConfig = new MySynthesizer.Config();
     public static OfflineResource offlineResource;
 
     // 音效
@@ -120,8 +125,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private long exitTime = 0;
     // 网络状态判断
     private boolean hasNetwork = false;
-    // 语音合成引擎已初始化判断
-    private boolean isInitial = false;
     // 正在摇晃判断
     private boolean isShaking = false;
 
@@ -139,8 +142,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public SoundPool soundPool;
     // 百度语音合成引擎
     public MySynthesizer speechSynthesizer;
-    // 脚本引擎
-    public org.mozilla.javascript.Context javaScriptContext;
+    // 随机数生成引擎
+    public RandomEngine<String> randomEngine;
 
     // 顶部布局
     @BindView(R.id.topLayout)
@@ -201,9 +204,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     {
         super.onStart();
         // 申请权限
-        initPermission();
+        SystemUtils.askPermissions(this, PERMISSIONS, REQUEST_CODE);
         // 初始化配置
-        packageInfo = Utils.getPackageInfo(this);
+        packageInfo = SystemUtils.getPackageInfo(this);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         PreferenceManager.setDefaultValues(this, R.xml.pref_voice, true);
         loadPreferences();
@@ -217,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
             if (networkInfo != null)
             {
-                hasNetwork = networkInfo.isAvailable()/* && Utils.ping("www.baidu.com")*/;
+                hasNetwork = networkInfo.isAvailable()/* && WebUtils.ping("www.baidu.com")*/;
             }
         }
         // 获取传感器管理器
@@ -257,25 +260,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     super.run();
                     if (speechSynthesizer != null)
                     {
-                        boolean available = speechSynthesizer.init(synthesizerConfig);
-                        isInitial = true;
+                        speechSynthesizer.init(synthesizerConfig);
                         runOnUiThread(new Runnable()
                         {
                             @Override
                             public void run()
                             {
-                                stateImage.setImageDrawable(available ? greenImage : redImage);
+                                stateImage.setImageDrawable(speechSynthesizer.isInited() ? greenImage : redImage);
                             }
                         });
                     }
                 }
             }.start();
         }
-        // 初始化脚本引擎
+        // 初始化随机数生成引擎
+        randomEngine = new RandomEngine<>();
+        if (!elements.isEmpty()) randomEngine.setElementList(elements);
         if (codeEnabled)
         {
-            javaScriptContext = org.mozilla.javascript.Context.enter();
-            javaScriptContext.setOptimizationLevel(-1);
+            randomEngine.initJSEngine();
+            randomEngine.setScript(code);
         }
         // 检查更新
         if (updateEnabled) checkUpdate();
@@ -315,14 +319,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             speechSynthesizer.stop();
             speechSynthesizer.release();
             speechSynthesizer = null;
-            isInitial = false;
             stateImage.setImageDrawable(greyImage);
         }
-        // 释放脚本引擎
-        if (javaScriptContext != null)
+        // 释放随机数生成引擎
+        if (randomEngine != null)
         {
-            org.mozilla.javascript.Context.exit();
-            javaScriptContext = null;
+            randomEngine.release();
         }
     }
 
@@ -352,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSynthesizeStart(String s) {}
 
     @Override
-    public void onSynthesizeDataArrived(String s, byte[] bytes, int i) {}
+    public void onSynthesizeDataArrived(String s, byte[] bytes, int i, int j) {}
 
     @Override
     public void onSynthesizeFinish(String s) {}
@@ -371,7 +373,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void run()
             {
-                if(isShaking)
+                if (isShaking)
                 {
                     stop();
                 }
@@ -388,30 +390,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void run()
             {
                 stateImage.setImageDrawable(redImage);
-                Utils.toast(MainActivity.this,
+                SystemUtils.toast(MainActivity.this,
                         String.format(getString(R.string.synthesize_error), speechError.toString()),
                         Toast.LENGTH_LONG);
             }
         });
-    }
-
-    /**
-     * android 6.0 以上需要动态申请权限
-     */
-    private void initPermission()
-    {
-        ArrayList<String> toApplyList = new ArrayList<>();
-        for (String permission : PERMISSIONS)
-        {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED)
-            {
-                toApplyList.add(permission);
-            }
-        }
-        if (!toApplyList.isEmpty())
-        {
-            ActivityCompat.requestPermissions(this, toApplyList.toArray(new String[]{}), REQUEST_CODE);
-        }
     }
 
     @Override
@@ -427,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     {
                         if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[i]))
                         {
-                            Utils.toast(this, R.string.no_storage_permission, Toast.LENGTH_LONG);
+                            SystemUtils.toast(this, R.string.no_storage_permission, Toast.LENGTH_LONG);
                             ActivityCompat.requestPermissions(this, new String[] {permissions[i]}, REQUEST_CODE);
                         }
                     }
@@ -455,11 +438,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         params.put(SpeechSynthesizer.PARAM_MIX_MODE, network ?
                 (time ? SpeechSynthesizer.MIX_MODE_HIGH_SPEED_NETWORK : SpeechSynthesizer.MIX_MODE_HIGH_SPEED_SYNTHESIZE) :
                 (time ? SpeechSynthesizer.MIX_MODE_DEFAULT : SpeechSynthesizer.MIX_MODE_HIGH_SPEED_SYNTHESIZE_WIFI));
-        String speakerType = sharedPreferences.getString("voice_speaker", "0");
-        params.put(SpeechSynthesizer.PARAM_SPEAKER, speakerType);
+        String speakerID = sharedPreferences.getString("voice_speaker", "0");
+        params.put(SpeechSynthesizer.PARAM_SPEAKER, speakerID);
+        String speakerType = "";
+        switch (Integer.parseInt(speakerID))
+        {
+            default:
+            case 0: speakerType = OfflineResource.VOICE_FEMALE; break;
+            case 1: speakerType = OfflineResource.VOICE_MALE; break;
+            case 2: speakerType = OfflineResource.VOICE_DUXY; break;
+            case 3: speakerType = OfflineResource.VOICE_DUYY; break;
+        }
         offlineResource = new OfflineResource(this, speakerType);
-        params.put(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, offlineResource.getTextFilepath());
-        params.put(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, offlineResource.getModelFilepath());
+        params.put(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, offlineResource.getTextFileLocation());
+        params.put(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, offlineResource.getModelFileLocation());
         showText = sharedPreferences.getString("voice_text", getString(R.string.voice_text_default));
         params.put(SpeechSynthesizer.PARAM_VOLUME, String.valueOf(sharedPreferences.getInt("voice_volume", 5)));
         params.put(SpeechSynthesizer.PARAM_SPEED, String.valueOf(sharedPreferences.getInt("voice_speed", 5)));
@@ -469,12 +461,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         soundEnabled = sharedPreferences.getBoolean("sound_switch", true);
         // 震动设置
         vibratorEnabled = sharedPreferences.getBoolean("vibrator_switch", true);
-        vibrateTime = sharedPreferences.getInt("vibrator_time", 300);
+        vibrateTime = Integer.parseInt(sharedPreferences.getString("vibrator_time", "300"));
         // 摇晃设置
-        sensitivity = sharedPreferences.getInt("sensitivity", 20);
+        sensitivity = Integer.parseInt(sharedPreferences.getString("sensitivity", "20"));
         // 随机算法
         codeEnabled =  sharedPreferences.getBoolean("custom_code", false);
-        code = CodeActivity.formatCode(Utils.readFile(RES_PATH + "/" + CodeActivity.FILE_NAME));
+        code = CodeActivity.formatCode(FileUtils.readFile(RES_PATH + "/" + CodeActivity.FILE_NAME));
         // 更新设置
         updateEnabled = sharedPreferences.getBoolean("update", true);
     }
@@ -488,7 +480,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         else if ((currentTimeMillis() - exitTime) > 2000)
         {
-            Utils.toast(this, R.string.exit);
+            SystemUtils.toast(this, R.string.exit);
             exitTime = currentTimeMillis();
         }
         else
@@ -508,7 +500,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        switch(item.getItemId())
+        switch (item.getItemId())
         {
             case R.id.action_code:
             {
@@ -523,7 +515,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case R.id.action_feedback:
             {
                 // TODO 反馈
-                Utils.toast(this, "我连服务器都没有,怎么反馈");
+                SystemUtils.toast(this, "我连服务器都没有,怎么反馈");
                 return true;
             }
             case R.id.action_help:
@@ -583,7 +575,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     {
                         if (update == null)
                         {
-                            update = new JSONObject(Utils.readUrl(UPDATE_URL));
+                            update = new JSONObject(WebUtils.readUrl(UPDATE_URL));
                         }
                         haveUpdate = packageInfo != null && update.getInt("versionCode") > packageInfo.versionCode;
                     } catch (JSONException e) {
@@ -596,7 +588,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         public void run()
                         {
                             if (haveUpdate) displayUpdate();
-                            else Utils.toast(MainActivity.this, R.string.no_update);
+                            else SystemUtils.toast(MainActivity.this, R.string.no_update);
                         }
                     });
                 }
@@ -604,7 +596,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         else
         {
-            Utils.toast(this, R.string.cannot_update);
+            SystemUtils.toast(this, R.string.cannot_update);
         }
     }
 
@@ -681,13 +673,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     // 更新地址
                     String apkUrl = update.getString("updateUrl");
                     File file = new File(RES_PATH, "update.apk");
-                    if (!file.exists() || !Objects.equals(Utils.fileToMD5(file), update.getString("md5")))
+                    if (!file.exists() || !Objects.equals(FileUtils.fileToMD5(file), update.getString("md5")))
                     {
                         // 下载APK
-                        Utils.downloadFile(apkUrl, file, dialog);
+                        WebUtils.downloadFile(apkUrl, file, dialog);
                     }
                     // 安装APK
-                    Utils.installApk(MainActivity.this, file);
+                    SystemUtils.installApk(MainActivity.this, file);
                     // 关闭对话框
                     dialog.dismiss();
                 } catch (Exception e) {
@@ -699,14 +691,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void start()
     {
-        if (isInitial)
+        if (!voiceEnabled || speechSynthesizer.isInited())
         {
-            int size = elements.size();
-            if (size > 0)
+            if (randomEngine.hasElement())
             {
                 isShaking = true;
                 // 生成文本
-                String element = elements.get(generate(size));
+                String element = "";
+                try
+                {
+                    element = randomEngine.generate();
+                }
+                catch (RandomEngine.InvalidCodeException e)
+                {
+                    e.printStackTrace();
+                    SystemUtils.toast(this, R.string.code_invalid1);
+                    element = elements.get(e.getResult());
+                }
                 String text = String.format(showText, element);
                 // 设置中心文本
                 outputText.setText(text);
@@ -730,12 +731,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             else
             {
-                Utils.toast(this, R.string.list_blank);
+                SystemUtils.toast(this, R.string.list_blank);
             }
         }
         else
         {
-            Utils.toast(this, R.string.synthesize_initializing);
+            SystemUtils.toast(this, R.string.synthesize_initializing);
         }
     }
 
@@ -764,30 +765,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 bottomDivider.setVisibility(View.GONE);
             }
         }, 300);
-    }
-
-    public Random rand = new Random();
-    public int generate(int range)
-    {
-        int result = rand.nextInt(range);
-        if (codeEnabled)
-        {
-            Scriptable scope = javaScriptContext.initStandardObjects();
-            javaScriptContext.evaluateString(scope, code, null, 1, null);
-            Object jsObj = scope.get("generate" , scope);
-            if (jsObj instanceof Function)
-            {
-                Object args[] = {elements.toArray(new String[0]), range, result};
-                Function generate = (Function) jsObj;
-                Object returnValue = generate.call(javaScriptContext, scope, scope, args);
-                int newResult = (int) org.mozilla.javascript.Context.toNumber(returnValue);
-                if (newResult >=0 && newResult <= range)
-                {
-                    return newResult;
-                }
-            }
-            Utils.toast(this, R.string.code_invalid1);
-        }
-        return result;
     }
 }
