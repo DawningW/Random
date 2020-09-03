@@ -4,7 +4,7 @@
 
 自2.0版本起, 遵循[Apache License 2.0协议](https://github.com/DawningW/Random/blob/master/LICENSE)开源
 
-* 旧版本遵循MIT协议开源 *
+_旧版本遵循MIT协议开源_
 
 ![主界面](./doc/screenshot.jpg)
 
