@@ -8,7 +8,7 @@
     <string name="synthesize_auth_error">The TTS engine authorization failed: %s</string>
     <string name="synthesize_init_error">The TTS engine initialization failed: %d</string>
     <string name="copyright">Made by QingChenW</string>
-    <string name="exit">Press again to exit</string>
+
 
     <string name="list">Aggregation</string>
     <string name="list_number">Element number: %s</string>
@@ -102,6 +102,9 @@
     <string name="about_group_connect">Connect us</string>
     <string name="about_group_other">Some other things</string>
     <string name="about_view_license">View source license</string>
+
+    <string name="exit">Exit</string>
+    <string name="press_to_exit">Press again to exit</string>
 
     <string name="flashlight">Flashlight</string>
 

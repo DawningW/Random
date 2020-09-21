@@ -5,7 +5,7 @@ import android.content.res.AssetManager;
 
 import java.util.HashSet;
 
-import io.github.dawncraft.qingchenw.random.MainActivity;
+import io.github.dawncraft.qingchenw.random.ui.MainActivity;
 import io.github.dawncraft.qingchenw.random.utils.FileUtils;
 
 /**

@@ -1,4 +1,4 @@
-package io.github.dawncraft.qingchenw.random;
+package io.github.dawncraft.qingchenw.random.ui.fragments;
 
 import android.Manifest;
 import android.app.ProgressDialog;
@@ -7,23 +7,22 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Vibrator;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -34,22 +33,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
 import com.baidu.tts.client.SpeechError;
 import com.baidu.tts.client.SpeechSynthesizer;
-import com.baidu.tts.client.SpeechSynthesizerListener;
 import com.baidu.tts.client.TtsMode;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,6 +57,7 @@ import butterknife.BindAnim;
 import butterknife.BindDrawable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.github.dawncraft.qingchenw.random.R;
 import io.github.dawncraft.qingchenw.random.tts.MySynthesizer;
 import io.github.dawncraft.qingchenw.random.tts.OfflineResource;
 import io.github.dawncraft.qingchenw.random.ui.AboutActivity;
@@ -66,6 +65,7 @@ import io.github.dawncraft.qingchenw.random.ui.CodeActivity;
 import io.github.dawncraft.qingchenw.random.ui.FlashlightActivity;
 import io.github.dawncraft.qingchenw.random.ui.HelpActivity;
 import io.github.dawncraft.qingchenw.random.ui.ListActivity;
+import io.github.dawncraft.qingchenw.random.ui.MainActivity;
 import io.github.dawncraft.qingchenw.random.ui.VoiceActivity;
 import io.github.dawncraft.qingchenw.random.utils.FileUtils;
 import io.github.dawncraft.qingchenw.random.utils.RandomEngine;
@@ -77,34 +77,11 @@ import static android.os.Process.myPid;
 import static io.github.dawncraft.qingchenw.random.ui.ListActivity.DELIMITER;
 import static java.lang.System.currentTimeMillis;
 
-/**
- * 一个叫号的小应用
- * 感谢changer0的教程https://www.jianshu.com/p/bc5298651b30
- * <p>
- * Created by QingChenW on 2018/6/25
- */
-public class MainActivity extends AppCompatActivity implements SensorEventListener, SpeechSynthesizerListener
+public class SingleModeFragment extends BaseModeFragment
 {
-    // 更新地址
-    public static final String UPDATE_URL = "https://raw.githubusercontent.com/DawningW/Random/master/update.json";
-    // 资源文件路径
-    public static final String RES_PATH = Environment.getExternalStorageDirectory() + "/" + "Random";
-    // 权限
-    public static final int REQUEST_CODE = 0;
-    public static final String[] PERMISSIONS = {
-            Manifest.permission.CAMERA,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_PHONE_STATE
-    };
-
-    // 元素列表
-    public static ArrayList<String> elements = new ArrayList<>();
     // 文本
     public static String showText;
-    // 语音合成
-    public static boolean voiceEnabled;
-    public static MySynthesizer.Config synthesizerConfig = new MySynthesizer.Config();
-    public static OfflineResource offlineResource;
+
 
     // 音效
     public static boolean soundEnabled;
@@ -116,34 +93,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // 随机算法
     public static boolean codeEnabled;
     public static String code;
-    // 更新
-    public static boolean updateEnabled;
-    public static JSONObject update;
-    public static boolean haveUpdate;
 
-    // 退出计时器
-    private long exitTime = 0;
-    // 网络状态判断
-    private boolean hasNetwork = false;
+
+
+
     // 正在摇晃判断
     private boolean isShaking = false;
 
-    // 应用信息
-    static public PackageInfo packageInfo;
-    // 网络
-    public ConnectivityManager connectivityManager;
-    // 配置
-    public SharedPreferences sharedPreferences;
+
     // 传感器
     public SensorManager sensorManager;
     // 振动
     public Vibrator vibrator;
     // 音效池
     public SoundPool soundPool;
-    // 百度语音合成引擎
-    public MySynthesizer speechSynthesizer;
-    // 随机数生成引擎
-    public RandomEngine<String> randomEngine;
+
 
     // 顶部布局
     @BindView(R.id.topLayout)
@@ -189,40 +153,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public int openAudio;
     public int closeAudio;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState)
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
-        super.onCreate(savedInstanceState);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.activity_main);
         // 初始化ButterKnife
-        ButterKnife.bind(this);
+        ButterKnife.bind(this.requireActivity());
+        // 初始化布局
+        View root = inflater.inflate(R.layout.fragment_single, container);
+        return root;
     }
 
     @Override
-    protected void onStart()
+    public void onStart()
     {
         super.onStart();
-        // 申请权限
-        SystemUtils.askPermissions(this, PERMISSIONS, REQUEST_CODE);
-        // 初始化配置
-        packageInfo = SystemUtils.getPackageInfo(this);
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        PreferenceManager.setDefaultValues(this, R.xml.pref_voice, true);
-        loadPreferences();
+
+
         // 初始化控件
         listText.setText(String.format(getString(R.string.list_number), String.valueOf(elements.size())));
         voiceText.setText(String.format(getString(R.string.voice_text), showText));
-        // 获取网络管理器
-        connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager != null)
-        {
-            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-            if (networkInfo != null)
-            {
-                hasNetwork = networkInfo.isAvailable()/* && WebUtils.ping("www.baidu.com")*/;
-            }
-        }
         // 获取传感器管理器
         sensorManager = ((SensorManager) getSystemService(SENSOR_SERVICE));
         if (sensorManager != null)
@@ -471,71 +421,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         updateEnabled = sharedPreferences.getBoolean("update", true);
     }
 
-    @Override
-    public void onBackPressed()
-    {
-        if (isShaking)
-        {
-            stop();
-        }
-        else if ((currentTimeMillis() - exitTime) > 2000)
-        {
-            SystemUtils.toast(this, R.string.exit);
-            exitTime = currentTimeMillis();
-        }
-        else
-        {
-            super.onBackPressed();
-            killProcess(myPid());
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch (item.getItemId())
-        {
-            case R.id.action_code:
-            {
-                startActivity(new Intent(this, CodeActivity.class));
-                return true;
-            }
-            case R.id.action_update:
-            {
-                checkUpdate();
-                return true;
-            }
-            case R.id.action_feedback:
-            {
-                // TODO 反馈
-                SystemUtils.toast(this, "我连服务器都没有,怎么反馈");
-                return true;
-            }
-            case R.id.action_help:
-            {
-                startActivity(new Intent(this, HelpActivity.class));
-                return true;
-            }
-            case R.id.action_about:
-            {
-                startActivity(new Intent(this, AboutActivity.class));
-                return true;
-            }
-            case R.id.action_flashlight:
-            {
-                startActivity(new Intent(this, FlashlightActivity.class));
-                return true;
-            }
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     public void onClicked(View view)
     {
@@ -559,6 +444,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
     }
+
 
     public void checkUpdate()
     {
@@ -766,4 +652,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }, 300);
     }
+
 }

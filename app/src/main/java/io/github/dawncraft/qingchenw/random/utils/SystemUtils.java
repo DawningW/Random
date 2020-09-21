@@ -40,25 +40,6 @@ public class SystemUtils
         return null;
     }
     
-    /**
-     * android 6.0 以上需要动态申请权限
-     */
-    public static void askPermissions(Activity activity, final String[] permissions, final int request_code)
-    {
-        ArrayList<String> toApplyList = new ArrayList<>();
-        for (String permission : permissions)
-        {
-            if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED)
-            {
-                toApplyList.add(permission);
-            }
-        }
-        if (!toApplyList.isEmpty())
-        {
-            ActivityCompat.requestPermissions(activity, toApplyList.toArray(new String[]{}), request_code);
-        }
-    }
-    
     public static String getPath(Context context, Uri uri)
     {
         if ("content".equalsIgnoreCase(uri.getScheme()))

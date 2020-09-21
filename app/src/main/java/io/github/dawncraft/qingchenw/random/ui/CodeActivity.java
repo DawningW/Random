@@ -11,7 +11,6 @@ import android.widget.Switch;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.github.dawncraft.qingchenw.random.MainActivity;
 import io.github.dawncraft.qingchenw.random.R;
 import io.github.dawncraft.qingchenw.random.utils.FileUtils;
 import io.github.dawncraft.qingchenw.random.utils.SystemUtils;

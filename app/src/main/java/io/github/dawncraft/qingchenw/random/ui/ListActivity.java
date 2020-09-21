@@ -27,12 +27,13 @@ import android.widget.TextView;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindAnim;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.github.dawncraft.qingchenw.random.MainActivity;
 import io.github.dawncraft.qingchenw.random.R;
 import io.github.dawncraft.qingchenw.random.ui.widgets.RecyclerAdapter;
 import io.github.dawncraft.qingchenw.random.utils.FileUtils;

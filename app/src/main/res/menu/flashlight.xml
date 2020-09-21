@@ -5,6 +5,6 @@
     <item
         android:id="@+id/action_switch"
         android:title="切换"
-        app:actionLayout="@layout/switch_item"
-        app:showAsAction="always|withText" />
+        app:actionLayout=""
+        app:showAsAction="always" />
 </menu>

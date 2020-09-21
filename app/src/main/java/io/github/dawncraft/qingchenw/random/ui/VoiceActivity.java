@@ -14,7 +14,7 @@ public class VoiceActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_voice);
+        setContentView(R.layout.activity_settings);
         if (getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportFragmentManager()
@@ -30,7 +30,7 @@ public class VoiceActivity extends AppCompatActivity
         {
             // 返回键
             case android.R.id.home:
-                this.finish();
+                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

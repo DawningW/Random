@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="io.github.dawncraft.qingchenw.random">
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.INSTALL_PACKAGES" tools:ignore="ProtectedPermissions" />
 
     <application
+        android:name=".RandomApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -35,8 +38,9 @@
                 android:resource="@xml/file_paths" />
         </provider>
         <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name">
+            android:name=".ui.MainActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -45,50 +49,50 @@
         <activity
             android:name=".ui.ListActivity"
             android:label="@string/list"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
+                android:value="io.github.dawncraft.qingchenw.random.ui.MainActivity" />
         </activity>
         <activity
             android:name=".ui.VoiceActivity"
             android:label="@string/voice"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
+                android:value="io.github.dawncraft.qingchenw.random.ui.MainActivity" />
         </activity>
         <activity
             android:name=".ui.CodeActivity"
             android:label="@string/code"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
+                android:value="io.github.dawncraft.qingchenw.random.ui.MainActivity" />
         </activity>
         <activity
             android:name=".ui.HelpActivity"
             android:label="@string/help"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
+                android:value="io.github.dawncraft.qingchenw.random.ui.MainActivity" />
         </activity>
         <activity
             android:name=".ui.AboutActivity"
             android:label="@string/about"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
+                android:value="io.github.dawncraft.qingchenw.random.ui.MainActivity" />
         </activity>
         <activity
             android:name=".ui.FlashlightActivity"
             android:label="Flashlight"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.github.dawncraft.qingchenw.random.MainActivity" />
+                android:value="io.github.dawncraft.qingchenw.random.ui.MainActivity" />
         </activity>
     </application>
 </manifest>

@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import butterknife.ButterKnife;
-import io.github.dawncraft.qingchenw.random.MainActivity;
 import io.github.dawncraft.qingchenw.random.R;
 import io.github.dawncraft.qingchenw.random.utils.FileUtils;
 import io.github.dawncraft.qingchenw.random.utils.SystemUtils;
