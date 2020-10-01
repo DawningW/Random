@@ -49,7 +49,7 @@
             android:defaultValue="@string/voice_text_default"
             android:dependency="voice_switch"
             android:inputType="textCapWords"
-            android:key="voice_text"
+            android:key="show_text"
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"

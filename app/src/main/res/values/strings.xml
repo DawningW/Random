@@ -41,7 +41,6 @@
     <string name="list_menu_clear_title">Empty the entire collection</string>
     <string name="list_menu_clear_hint">Do you really want to clear all elements?</string>
     <string name="list_blank">Please input some elements</string>
-    <string name="no_storage_permission">You must have the permission to use some functions</string>
 
     <string name="voice">Voice</string>
     <string name="voice_text">Text: %s</string>

@@ -40,7 +40,6 @@
     <string name="list_menu_clear_title">清空整个集合</string>
     <string name="list_menu_clear_hint">真的要清空集合吗?</string>
     <string name="list_blank">请先向集合中添加元素</string>
-    <string name="no_storage_permission">你必须同意存储权限才能使用存储功能</string>
 
     <string name="voice">语音</string>
     <string name="voice_text">朗读文本: %s</string>

@@ -5,6 +5,7 @@ import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -50,7 +51,7 @@ public class RandomEngine<T>
         scriptCode = code;
     }
     
-    public void setElementList(ArrayList<T> list)
+    public void setElementList(List<T> list)
     {
         if (list != null && !list.isEmpty())
         {

@@ -1,33 +1,25 @@
 package io.github.dawncraft.qingchenw.random;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
-import android.net.ConnectivityManager;
 import android.os.Environment;
 
-import androidx.fragment.app.FragmentActivity;
 import androidx.preference.PreferenceManager;
 
-import com.permissionx.guolindev.PermissionX;
-import com.permissionx.guolindev.callback.ExplainReasonCallbackWithBeforeParam;
-import com.permissionx.guolindev.callback.RequestCallback;
-import com.permissionx.guolindev.request.ExplainScope;
+import com.xuexiang.xupdate.XUpdate;
+import com.xuexiang.xupdate.entity.UpdateEntity;
+import com.xuexiang.xupdate.entity.UpdateError;
+import com.xuexiang.xupdate.listener.IUpdateParseCallback;
+import com.xuexiang.xupdate.listener.OnUpdateFailureListener;
+import com.xuexiang.xupdate.proxy.IUpdateParser;
 
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import io.github.dawncraft.qingchenw.random.tts.MySynthesizer;
-import io.github.dawncraft.qingchenw.random.tts.OfflineResource;
-import io.github.dawncraft.qingchenw.random.ui.MainActivity;
-import io.github.dawncraft.qingchenw.random.utils.RandomEngine;
+import io.github.dawncraft.qingchenw.random.utils.OKHttpUpdateHttpService;
 import io.github.dawncraft.qingchenw.random.utils.SystemUtils;
+
+import static com.xuexiang.xupdate.entity.UpdateError.ERROR.CHECK_NO_NEW_VERSION;
 
 /**
  * 一个专为教师设计的叫号小应用
@@ -42,30 +34,16 @@ public class RandomApplication extends Application
     // 资源文件路径
     public static final String RES_PATH = Environment.getExternalStorageDirectory() + "/" + "Random";
 
+    // 实例
     private static RandomApplication instance;
-
-    // 元素列表
-    public Map<String, ArrayList<String>> elements = new LinkedHashMap<>();
-
-    // 语音合成
-    public static boolean voiceEnabled;
-    public static MySynthesizer.Config synthesizerConfig = new MySynthesizer.Config();
-    public static OfflineResource offlineResource;
 
     // 更新
     public static boolean updateEnabled;
-    public static JSONObject update;
     public static boolean haveUpdate;
-
     // 应用信息
-    static public PackageInfo packageInfo;
+    public static PackageInfo packageInfo;
     // 配置
-    public SharedPreferences sharedPreferences;
-
-    // 百度语音合成引擎
-    public MySynthesizer speechSynthesizer;
-    // 随机数生成引擎
-    public RandomEngine<String> randomEngine;
+    public static SharedPreferences sharedPreferences;
 
     @Override
     public void onCreate()
@@ -76,7 +54,57 @@ public class RandomApplication extends Application
         packageInfo = SystemUtils.getPackageInfo(this);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         PreferenceManager.setDefaultValues(this, R.xml.pref_voice, true);
-        loadPreferences();
+        updateEnabled = sharedPreferences.getBoolean("update", true);
+        // 初始化更新检查器
+        XUpdate.get()
+                .isWifiOnly(true)
+                .isGet(true)
+                .isAutoMode(false)
+                .setOnUpdateFailureListener(new OnUpdateFailureListener()
+                {
+                    @Override
+                    public void onFailure(UpdateError error)
+                    {
+                        if (error.getCode() != CHECK_NO_NEW_VERSION)
+                        {
+                            SystemUtils.toast(RandomApplication.this, error.toString());
+                        }
+                    }
+                })
+                .setIUpdateHttpService(new OKHttpUpdateHttpService())
+                .setIUpdateParser(new IUpdateParser()
+                {
+                    @Override
+                    public boolean isAsyncParser()
+                    {
+                        return true;
+                    }
+
+                    @Override
+                    public UpdateEntity parseJson(String json) throws Exception
+                    {
+                        return null;
+                    }
+
+                    @Override
+                    public void parseJson(String s, IUpdateParseCallback callback) throws Exception
+                    {
+                        JSONObject json = new JSONObject(s);
+                        if (json.length() > 0 && json.getString("name").equals("Random"))
+                        {
+                            haveUpdate = json.getInt("versionCode") > packageInfo.versionCode;
+                            callback.onParseResult(new UpdateEntity()
+                                    .setHasUpdate(haveUpdate)
+                                    .setForce(json.getBoolean("forceUpdate"))
+                                    .setVersionCode(json.getInt("versionCode"))
+                                    .setVersionName(json.getString("versionName"))
+                                    .setDownloadUrl(json.getString("updateUrl"))
+                                    .setMd5(json.getString("md5"))
+                                    .setUpdateContent(json.getString("description")));
+                        }
+                    }
+                })
+                .init(this);
     }
 
     @Override

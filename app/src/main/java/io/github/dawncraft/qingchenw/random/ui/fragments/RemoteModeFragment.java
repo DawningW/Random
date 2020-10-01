@@ -4,4 +4,13 @@ import androidx.fragment.app.Fragment;
 
 public class RemoteModeFragment extends BaseModeFragment
 {
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
 }

@@ -4,6 +4,8 @@ import android.os.Build;
 
 import androidx.annotation.NonNull;
 
+import com.baidu.tts.tools.StringTool;
+
 public class Utils
 {
     private Utils() {}
@@ -11,6 +13,11 @@ public class Utils
     public static int between(int min, int num, int max)
     {
         return Math.max(Math.min(num, max), min);
+    }
+
+    public static boolean isStrNullOrEmpty(String s)
+    {
+        return s == null || s.isEmpty();
     }
     
     @NonNull

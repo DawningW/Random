@@ -34,7 +34,9 @@ public class SystemUtils
         try
         {
             return packageManager.getPackageInfo(context.getPackageName(), 0);
-        } catch (PackageManager.NameNotFoundException e) {
+        }
+        catch (PackageManager.NameNotFoundException e)
+        {
             e.printStackTrace();
         }
         return null;
@@ -76,7 +78,9 @@ public class SystemUtils
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             Uri contentUri = FileProvider.getUriForFile(context, "io.github.dawncraft.qingchenw.random.FileProvider", file);
             intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
-        } else {
+        }
+        else
+        {
             intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
         }
         context.startActivity(intent);

@@ -12,6 +12,7 @@ import android.widget.Switch;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.github.dawncraft.qingchenw.random.R;
+import io.github.dawncraft.qingchenw.random.RandomApplication;
 import io.github.dawncraft.qingchenw.random.utils.FileUtils;
 import io.github.dawncraft.qingchenw.random.utils.SystemUtils;
 
@@ -62,9 +63,9 @@ public class CodeActivity extends AppCompatActivity
                 switchState(isChecked);
             }
         });
-        codeEditor.getSetting().setWorkingFolder(MainActivity.RES_PATH);
+        codeEditor.getSetting().setWorkingFolder(RandomApplication.RES_PATH);
         codeEditor.getTextProcessor().setCodeCompletion(false);
-        codeEditor.setText(FileUtils.readFile(MainActivity.RES_PATH + "/" + FILE_NAME), 1);
+        codeEditor.setText(FileUtils.readFile(RandomApplication.RES_PATH + "/" + FILE_NAME), 1);
         switchState(MainActivity.codeEnabled);
     }
 
@@ -91,7 +92,7 @@ public class CodeActivity extends AppCompatActivity
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(CodeActivity.this).edit();
         editor.putBoolean("custom_code", MainActivity.codeEnabled);
         editor.apply();
-        FileUtils.writeFile(MainActivity.RES_PATH + "/" + FILE_NAME, str);
+        FileUtils.writeFile(RandomApplication.RES_PATH + "/" + FILE_NAME, str);
     }
 
     public void onClicked(View view)

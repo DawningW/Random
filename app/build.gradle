@@ -33,6 +33,7 @@ dependencies {
     implementation 'androidx.vectordrawable:vectordrawable:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     implementation 'com.google.android.material:material:1.2.1'
+    implementation 'com.github.xxl6097:okhttputils:2.4.1'
     implementation 'com.permissionx.guolindev:permissionx:1.4.0'
     implementation 'com.github.ahmadaghazadeh:CodeEditor:1.0.17'
     implementation 'com.github.medyo:android-about-page:1.2.5'

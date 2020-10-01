@@ -47,6 +47,9 @@ public class ListActivity extends AppCompatActivity
     // 选择文件的请求代码
     public static final int FILE_SELECT_CODE = 1;
 
+    // 元素列表
+    public Map<String, ArrayList<String>> elements = new LinkedHashMap<>();
+
     // 适配器
     public RecyclerAdapter recyclerAdapter;
     // 触摸
@@ -86,7 +89,7 @@ public class ListActivity extends AppCompatActivity
         manager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(manager);
         // 初始化适配器
-        recyclerAdapter = new RecyclerAdapter(this, MainActivity.elements);
+        recyclerAdapter = new RecyclerAdapter(this, elements);
         recyclerView.setAdapter(recyclerAdapter);
         // 初始化触摸
         itemTouchHelper = new ItemTouchHelper(new RecyclerAdapter.Callback());
@@ -122,7 +125,7 @@ public class ListActivity extends AppCompatActivity
     {
         super.onPause();
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-        editor.putString("elements", Utils.join(DELIMITER, MainActivity.elements.toArray(new String[]{})));
+        editor.putString("elements", Utils.join(DELIMITER, elements.toArray()));
         editor.apply();
     }
 
@@ -343,7 +346,7 @@ public class ListActivity extends AppCompatActivity
                 String path = editText.getText().toString();
                 if(!new File(path).exists() || checkBox.isChecked())
                 {
-                    FileUtils.writeFile(path, Utils.join(DELIMITER, MainActivity.elements.toArray(new String[]{})));
+                    FileUtils.writeFile(path, Utils.join(DELIMITER, elements.toArray(new String[]{})));
                     return;
                 }
                 SystemUtils.toast(ListActivity.this,R.string.list_menu_save_failed);

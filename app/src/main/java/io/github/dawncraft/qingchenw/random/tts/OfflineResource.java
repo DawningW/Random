@@ -4,8 +4,9 @@ import android.content.Context;
 import android.content.res.AssetManager;
 
 import java.util.HashSet;
+import java.util.Set;
 
-import io.github.dawncraft.qingchenw.random.ui.MainActivity;
+import io.github.dawncraft.qingchenw.random.RandomApplication;
 import io.github.dawncraft.qingchenw.random.utils.FileUtils;
 
 /**
@@ -15,7 +16,7 @@ import io.github.dawncraft.qingchenw.random.utils.FileUtils;
  */
 public class OfflineResource implements IOfflineResourceConst
 {
-    private static HashSet<String> mapInitied = new HashSet<>();
+    private static Set<String> mapInitied = new HashSet<>();
 
     private AssetManager assets;
     private String destPath;
@@ -25,7 +26,7 @@ public class OfflineResource implements IOfflineResourceConst
     public OfflineResource(Context context, String voiceType)
     {
         assets = context.getApplicationContext().getAssets();
-        destPath = FileUtils.createDir(MainActivity.RES_PATH);
+        destPath = FileUtils.createDir(RandomApplication.RES_PATH);
         setOfflineVoiceType(voiceType);
     }
 
