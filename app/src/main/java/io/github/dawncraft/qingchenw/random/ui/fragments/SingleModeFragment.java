@@ -111,13 +111,13 @@ public class SingleModeFragment extends BaseModeFragment
     public void onPause()
     {
         super.onPause();
-        // 停止动画
+        // 停止摇号
         if (isShaking()) stop();
     }
 
     public void onClicked(View view)
     {
-        switch(view.getId())
+        switch (view.getId())
         {
             case R.id.imageButton:
             {
@@ -136,6 +136,19 @@ public class SingleModeFragment extends BaseModeFragment
                 break;
             }
         }
+    }
+
+    @Override
+    public void onSynthesizerInit()
+    {
+        stateImage.setImageDrawable(getMainActivity().speechSynthesizer.isInited() ? greenImage : redImage);
+        super.onSynthesizerInit();
+    }
+
+    @Override
+    public void onSpeechFinish(String s)
+    {
+        if (isShaking) stop();
     }
 
     @Override
@@ -165,7 +178,7 @@ public class SingleModeFragment extends BaseModeFragment
                     SystemUtils.toast(getMainActivity(), R.string.code_invalid1);
                     element = getMainActivity().elements.get(e.getResult());
                 }
-                String text = String.format(showText, element);
+                String text = String.format(showText, element.second);
                 // 设置中心文本
                 outputText.setText(text);
                 // 隐藏中心按钮

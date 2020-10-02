@@ -29,7 +29,6 @@ import com.permissionx.guolindev.request.ExplainScope;
 import com.xuexiang.xupdate.XUpdate;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,13 +42,13 @@ import io.github.dawncraft.qingchenw.random.ui.fragments.BaseModeFragment;
 import io.github.dawncraft.qingchenw.random.ui.fragments.ContinuousModeFragment;
 import io.github.dawncraft.qingchenw.random.ui.fragments.RemoteModeFragment;
 import io.github.dawncraft.qingchenw.random.ui.fragments.SingleModeFragment;
+import io.github.dawncraft.qingchenw.random.utils.ElementList;
 import io.github.dawncraft.qingchenw.random.utils.FileUtils;
 import io.github.dawncraft.qingchenw.random.utils.RandomEngine;
 import io.github.dawncraft.qingchenw.random.utils.SystemUtils;
 import io.github.dawncraft.qingchenw.random.utils.Utils;
 
 import static io.github.dawncraft.qingchenw.random.RandomApplication.RES_PATH;
-import static io.github.dawncraft.qingchenw.random.ui.ListActivity.DELIMITER;
 import static java.lang.System.currentTimeMillis;
 
 /**
@@ -119,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     @Override
                     public void onExplainReason(ExplainScope scope, List<String> deniedList, boolean beforeRequest)
                     {
-                        scope.showRequestReasonDialog(deniedList, "列表导入/导出功能及应用更新需要使用外部存储,请授予权限!", "好的");
+                        scope.showRequestReasonDialog(deniedList, "列表导入/导出功能及应用更新需要使用外部存储,请授予权限!", getString(android.R.string.ok));
                     }
                 })
                 .request(new RequestCallback()
@@ -183,7 +182,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             public void run()
                             {
                                 fragment.onSynthesizerInit();
-                                // stateImage.setImageDrawable(speechSynthesizer.isInited() ? greenImage : redImage);
                             }
                         });
                     }
@@ -192,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         // 初始化随机数生成引擎
         randomEngine = new RandomEngine<>();
-        if (!elements.isEmpty()) randomEngine.setElementList(elements);
+        randomEngine.setElementList(elements);
         if (codeEnabled)
         {
             randomEngine.initJSEngine();
@@ -377,12 +375,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void loadPreferences(SharedPreferences preferences)
     {
-        // 集合设置
-        elements.clear();
+        // 读取集合
         String toSplit = preferences.getString("elements", "");
         if (Utils.isStrNullOrEmpty(toSplit))
         {
-            Collections.addAll(elements, toSplit.split(String.valueOf(DELIMITER)));
+            elements = ElementList.fromString(toSplit).toList();
         }
         // 摇晃设置
         sensitivity = Integer.parseInt(Objects.requireNonNull(preferences.getString("sensitivity", "20")));

@@ -9,12 +9,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import android.text.InputType;
 import android.view.View;
 import android.view.animation.Animation;
@@ -24,36 +18,41 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindAnim;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.github.dawncraft.qingchenw.random.R;
+import io.github.dawncraft.qingchenw.random.RandomApplication;
 import io.github.dawncraft.qingchenw.random.ui.widgets.RecyclerAdapter;
+import io.github.dawncraft.qingchenw.random.utils.ElementList;
 import io.github.dawncraft.qingchenw.random.utils.FileUtils;
 import io.github.dawncraft.qingchenw.random.utils.SystemUtils;
 import io.github.dawncraft.qingchenw.random.utils.Utils;
 
 public class ListActivity extends AppCompatActivity
 {
-    // 分隔符
-    public static final CharSequence DELIMITER = ",";
     // 选择文件的请求代码
     public static final int FILE_SELECT_CODE = 1;
 
     // 元素列表
-    public Map<String, ArrayList<String>> elements = new LinkedHashMap<>();
+    private ElementList elementList;
 
     // 适配器
-    public RecyclerAdapter recyclerAdapter;
+    private RecyclerAdapter recyclerAdapter;
     // 触摸
-    public ItemTouchHelper itemTouchHelper;
+    private ItemTouchHelper itemTouchHelper;
 
     // 控件
     @BindView(R.id.recyclerView)
@@ -80,8 +79,11 @@ public class ListActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
-        if(getSupportActionBar() != null)
+        if (getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // 读取集合
+        String str = RandomApplication.sharedPreferences.getString("elements", "");
+        elementList = ElementList.fromString(str);
         // 初始化ButterKnife
         ButterKnife.bind(this);
         // 初始化布局
@@ -89,7 +91,7 @@ public class ListActivity extends AppCompatActivity
         manager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(manager);
         // 初始化适配器
-        recyclerAdapter = new RecyclerAdapter(this, elements);
+        recyclerAdapter = new RecyclerAdapter(this, elementList.getMap());
         recyclerView.setAdapter(recyclerAdapter);
         // 初始化触摸
         itemTouchHelper = new ItemTouchHelper(new RecyclerAdapter.Callback());
@@ -125,7 +127,7 @@ public class ListActivity extends AppCompatActivity
     {
         super.onPause();
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-        editor.putString("elements", Utils.join(DELIMITER, elements.toArray()));
+        editor.putString("elements", elementList.serialize());
         editor.apply();
     }
 
@@ -250,7 +252,7 @@ public class ListActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                int num = Integer.valueOf(editText.getText().toString());
+                int num = Integer.parseInt(editText.getText().toString());
                 if (num > 0)
                 {
                     List<String> items = new ArrayList<>();
@@ -290,15 +292,12 @@ public class ListActivity extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which)
             {
                 String str = FileUtils.readFile(editText.getText().toString());
-                if(!str.isEmpty())
+                if (!Utils.isStrNullOrEmpty(str))
                 {
-                    String[] items = str.split(String.valueOf(DELIMITER));
-                    if(items.length > 0)
-                    {
-                        if(checkBox.isChecked()) recyclerAdapter.clearItem();
-                        recyclerAdapter.insertItems(recyclerAdapter.getItemCount(), Arrays.asList(items));
-                        return;
-                    }
+                    ElementList temp = ElementList.fromCSV(str);
+                    if (checkBox.isChecked()) recyclerAdapter.clearItem();
+                    recyclerAdapter.insertItems(recyclerAdapter.getItemCount(), temp.getMap());
+                    return;
                 }
                 SystemUtils.toast(ListActivity.this,R.string.list_menu_load_invalid);
             }
@@ -344,9 +343,9 @@ public class ListActivity extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which)
             {
                 String path = editText.getText().toString();
-                if(!new File(path).exists() || checkBox.isChecked())
+                if (!new File(path).exists() || checkBox.isChecked())
                 {
-                    FileUtils.writeFile(path, Utils.join(DELIMITER, elements.toArray(new String[]{})));
+                    FileUtils.writeFile(path, elementList.write());
                     return;
                 }
                 SystemUtils.toast(ListActivity.this,R.string.list_menu_save_failed);

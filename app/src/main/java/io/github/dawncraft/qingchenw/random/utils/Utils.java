@@ -32,7 +32,7 @@ public class Utils
             else
             {
                 StringBuilder stringBuilder = new StringBuilder();
-                for(int i = 0; i < elements.length - 1; i++)
+                for (int i = 0; i < elements.length - 1; i++)
                 {
                     stringBuilder.append(elements[i]).append(delimiter);
                 }

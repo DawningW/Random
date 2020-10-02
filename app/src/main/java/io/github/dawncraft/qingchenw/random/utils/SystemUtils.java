@@ -1,23 +1,14 @@
 package io.github.dawncraft.qingchenw.random.utils;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.util.TypedValue;
 import android.widget.Toast;
 
 import androidx.annotation.StringRes;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
-
-import java.io.File;
-import java.util.ArrayList;
 
 public class SystemUtils
 {
@@ -62,28 +53,12 @@ public class SystemUtils
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else if ("file".equalsIgnoreCase(uri.getScheme()))
+        }
+        else if ("file".equalsIgnoreCase(uri.getScheme()))
         {
             return uri.getPath();
         }
         return null;
-    }
-    
-    public static void installApk(Context context, File file)
-    {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-        {
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            Uri contentUri = FileProvider.getUriForFile(context, "io.github.dawncraft.qingchenw.random.FileProvider", file);
-            intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
-        }
-        else
-        {
-            intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
-        }
-        context.startActivity(intent);
     }
 
     public static void toast(Context context, @StringRes int resId)

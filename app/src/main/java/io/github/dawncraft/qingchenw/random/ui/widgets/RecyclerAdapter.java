@@ -15,7 +15,9 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.github.dawncraft.qingchenw.random.R;
 import io.github.dawncraft.qingchenw.random.utils.SystemUtils;
@@ -23,12 +25,12 @@ import io.github.dawncraft.qingchenw.random.utils.SystemUtils;
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder>
 {
     public Context context;
-    public List<String> list;
+    public Map<String, List<String>> map;
 
-    public RecyclerAdapter(Context context, List<String> list)
+    public RecyclerAdapter(Context context, Map<String, List<String>> map)
     {
         this.context = context;
-        this.list = list;
+        this.map = map;
     }
 
     @NonNull
@@ -41,7 +43,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
     @Override
     public void onBindViewHolder(@NonNull final Holder holder, int position)
     {
-        holder.nameText.setText(list.get(position));
+        holder.nameText.setText(map);
         holder.nameText.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -86,24 +88,24 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
     @Override
     public int getItemCount()
     {
-        return list.size();
+        return map.size();
     }
 
     public void insertItem(int position, String name)
     {
-        list.add(position, name);
+        map.add(position, name);
         notifyItemInserted(position);
     }
 
     public void insertItems(int position, List<String> items)
     {
-        list.addAll(items);
+        map.addAll(items);
         notifyItemRangeInserted(position, items.size());
     }
 
     public void changeItem(int position, String name)
     {
-        list.set(position, name);
+        map.set(position, name);
         notifyItemChanged(position);
     }
 
@@ -111,22 +113,22 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
     {
         // 不能用交换,因为该方法一直在被调用
         // Collections.swap(list, fromPosition, toPosition);
-        String item = list.get(fromPosition);
-        list.remove(fromPosition);
-        list.add(toPosition, item);
+        String item = map.get(fromPosition);
+        map.remove(fromPosition);
+        map.add(toPosition, item);
         notifyItemMoved(fromPosition, toPosition);
     }
 
     public void deleteItem(int position)
     {
-        list.remove(position);
+        map.remove(position);
         notifyItemRemoved(position);
     }
 
     public void clearItem()
     {
-        int count = list.size();
-        list.clear();
+        int count = map.size();
+        map.clear();
         notifyItemRangeRemoved(0, count);
     }
 

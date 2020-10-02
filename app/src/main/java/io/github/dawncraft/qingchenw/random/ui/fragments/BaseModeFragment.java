@@ -28,10 +28,7 @@ public abstract class BaseModeFragment extends Fragment
 
     public void onSynthesizerInit() {}
 
-    public void onSpeechFinish(String s)
-    {
-        if (isShaking) stop();
-    }
+    public void onSpeechFinish(String s) {}
 
     public void onSynthesizerError(String s, final SpeechError speechError)
     {

@@ -63,6 +63,14 @@
                 android:value="io.github.dawncraft.qingchenw.random.ui.MainActivity" />
         </activity>
         <activity
+            android:name=".ui.ModeActivity"
+            android:label="@string/mode"
+            android:parentActivityName=".ui.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="io.github.dawncraft.qingchenw.random.ui.MainActivity" />
+        </activity>
+        <activity
             android:name=".ui.CodeActivity"
             android:label="@string/code"
             android:parentActivityName=".ui.MainActivity">
