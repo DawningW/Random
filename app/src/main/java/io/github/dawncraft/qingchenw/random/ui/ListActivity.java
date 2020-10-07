@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.view.View;
-import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -24,24 +23,23 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindAnim;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.github.dawncraft.qingchenw.random.R;
 import io.github.dawncraft.qingchenw.random.RandomApplication;
-import io.github.dawncraft.qingchenw.random.ui.widgets.RecyclerAdapter;
 import io.github.dawncraft.qingchenw.random.utils.ElementList;
 import io.github.dawncraft.qingchenw.random.utils.FileUtils;
 import io.github.dawncraft.qingchenw.random.utils.SystemUtils;
 import io.github.dawncraft.qingchenw.random.utils.Utils;
 
-public class ListActivity extends AppCompatActivity
+public class ListActivity extends AppCompatActivity implements SpeedDialView.OnActionSelectedListener
 {
     // 选择文件的请求代码
     public static final int FILE_SELECT_CODE = 1;
@@ -57,22 +55,8 @@ public class ListActivity extends AppCompatActivity
     // 控件
     @BindView(R.id.recyclerView)
     public RecyclerView recyclerView;
-    @BindView(R.id.backgroundView)
-    public View backgroundView;
-    @BindView(R.id.menuLayout)
-    public LinearLayout menuLayout;
     @BindView(R.id.floatingActionButton)
-    public FloatingActionButton floatingActionButton;
-
-    // 动画
-    @BindAnim(R.anim.anim_fade_in)
-    public Animation fadeInAnim;
-    @BindAnim(R.anim.anim_fade_out)
-    public Animation fadeOutAnim;
-    @BindAnim(R.anim.anim_menu_show)
-    public Animation showMenuAnim;
-    @BindAnim(R.anim.anim_menu_dismiss)
-    public Animation dismissMenuAnim;
+    public SpeedDialView floatingActionButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -97,29 +81,8 @@ public class ListActivity extends AppCompatActivity
         itemTouchHelper = new ItemTouchHelper(new RecyclerAdapter.Callback());
         itemTouchHelper.attachToRecyclerView(recyclerView);
         // 初始化菜单
-        backgroundView.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                switchMenu();
-            }
-        });
-        dismissMenuAnim.setAnimationListener(new Animation.AnimationListener()
-        {
-            @Override
-            public void onAnimationStart(Animation animation) {}
+        floatingActionButton.setOnActionSelectedListener(this);
 
-            @Override
-            public void onAnimationEnd(Animation animation)
-            {
-                backgroundView.setVisibility(View.GONE);
-                menuLayout.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
     }
 
     @Override
@@ -155,9 +118,9 @@ public class ListActivity extends AppCompatActivity
     @Override
     public void onBackPressed()
     {
-        if (menuLayout.getVisibility() == View.VISIBLE)
+        if (floatingActionButton.isOpen())
         {
-            switchMenu();
+            floatingActionButton.close();
         }
         else
         {
@@ -165,48 +128,29 @@ public class ListActivity extends AppCompatActivity
         }
     }
 
-    public void onClicked(View view)
+    @Override
+    public boolean onActionSelected(SpeedDialActionItem actionItem)
     {
-        switch (view.getId())
+        switch (actionItem.getId())
         {
-            case R.id.floatingActionButton:
-                switchMenu();
-                break;
-            case R.id.addFloatButton:
+            case R.id.action_add:
                 inputDialog();
                 break;
-            case R.id.addMoreFloatButton:
+            case R.id.action_add_more:
                 batchDialog();
                 break;
-            case R.id.readFloatButton:
+            case R.id.action_read:
                 loadDialog("");
                 break;
-            case R.id.saveFloatButton:
+            case R.id.action_save:
                 saveDialog();
                 break;
-            case R.id.clearFloatButton:
+            case R.id.action_clear:
                 clearDialog();
                 break;
+            default: return false;
         }
-    }
-
-    public void switchMenu()
-    {
-        if (menuLayout.getVisibility() != View.VISIBLE)
-        {
-            backgroundView.setVisibility(View.VISIBLE);
-            menuLayout.setVisibility(View.VISIBLE);
-            // 显示菜单动画
-            backgroundView.startAnimation(fadeInAnim);
-            menuLayout.startAnimation(showMenuAnim);
-        }
-        else
-        {
-            // FIX 先隐藏后播放动画会导致View重新显示
-            // 隐藏菜单动画
-            backgroundView.startAnimation(fadeOutAnim);
-            menuLayout.startAnimation(dismissMenuAnim);
-        }
+        return true;
     }
 
     public void inputDialog()

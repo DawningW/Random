@@ -9,6 +9,7 @@
     <string name="synthesize_init_error">The TTS engine initialization failed: %d</string>
     <string name="copyright">Made by QingChenW</string>
 
+    <string name="mode">Mode</string>
 
     <string name="list">Aggregation</string>
     <string name="list_number">Element number: %s</string>

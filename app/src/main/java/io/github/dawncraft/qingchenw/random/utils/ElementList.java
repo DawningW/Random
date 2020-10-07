@@ -5,8 +5,8 @@ import android.util.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +25,8 @@ public class ElementList
     public static final CharSequence NEW_LINE = "\n";
 
     // 元素列表
-    private Map<String, List<String>> elements = new LinkedHashMap<>();
+    private List<String> groups = new ArrayList<>();
+    private Map<String, List<String>> elements = new HashMap<>();
 
     // 请使用最下面的两个from方法实例化此类
     private ElementList() {}
