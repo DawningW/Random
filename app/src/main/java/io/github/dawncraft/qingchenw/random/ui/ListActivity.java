@@ -19,21 +19,26 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.chad.library.adapter.base.entity.node.BaseNode;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.github.dawncraft.qingchenw.random.R;
 import io.github.dawncraft.qingchenw.random.RandomApplication;
+import io.github.dawncraft.qingchenw.random.ui.adapters.ElementListAdapter;
+import io.github.dawncraft.qingchenw.random.ui.adapters.entities.ElementItem;
+import io.github.dawncraft.qingchenw.random.ui.adapters.entities.GroupItem;
 import io.github.dawncraft.qingchenw.random.utils.ElementList;
 import io.github.dawncraft.qingchenw.random.utils.FileUtils;
 import io.github.dawncraft.qingchenw.random.utils.SystemUtils;
@@ -44,13 +49,8 @@ public class ListActivity extends AppCompatActivity implements SpeedDialView.OnA
     // 选择文件的请求代码
     public static final int FILE_SELECT_CODE = 1;
 
-    // 元素列表
-    private ElementList elementList;
-
     // 适配器
-    private RecyclerAdapter recyclerAdapter;
-    // 触摸
-    private ItemTouchHelper itemTouchHelper;
+    private ElementListAdapter recyclerAdapter;
 
     // 控件
     @BindView(R.id.recyclerView)
@@ -65,9 +65,6 @@ public class ListActivity extends AppCompatActivity implements SpeedDialView.OnA
         setContentView(R.layout.activity_list);
         if (getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        // 读取集合
-        String str = RandomApplication.sharedPreferences.getString("elements", "");
-        elementList = ElementList.fromString(str);
         // 初始化ButterKnife
         ButterKnife.bind(this);
         // 初始化布局
@@ -75,11 +72,11 @@ public class ListActivity extends AppCompatActivity implements SpeedDialView.OnA
         manager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(manager);
         // 初始化适配器
-        recyclerAdapter = new RecyclerAdapter(this, elementList.getMap());
+        recyclerAdapter = new ElementListAdapter();
         recyclerView.setAdapter(recyclerAdapter);
-        // 初始化触摸
-        itemTouchHelper = new ItemTouchHelper(new RecyclerAdapter.Callback());
-        itemTouchHelper.attachToRecyclerView(recyclerView);
+        // 读取集合
+        String str = RandomApplication.sharedPreferences.getString("elements", "");
+        recyclerAdapter.setList(generateList(ElementList.fromString(str)));
         // 初始化菜单
         floatingActionButton.setOnActionSelectedListener(this);
 
@@ -89,6 +86,19 @@ public class ListActivity extends AppCompatActivity implements SpeedDialView.OnA
     protected void onPause()
     {
         super.onPause();
+        Map<String, List<String>> map = new LinkedHashMap<>();
+        for (BaseNode node : recyclerAdapter.getData())
+        {
+            GroupItem group = (GroupItem) node;
+            map.put(group.getName(), new ArrayList<>());
+            List<String> list = map.get(group.getName());
+            for (BaseNode node2 : group.getChildNode())
+            {
+                ElementItem element = (ElementItem) node2;
+                list.add(element.getName());
+            }
+        }
+        ElementList elementList = new ElementList(map);
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
         editor.putString("elements", elementList.serialize());
         editor.apply();
@@ -151,6 +161,21 @@ public class ListActivity extends AppCompatActivity implements SpeedDialView.OnA
             default: return false;
         }
         return true;
+    }
+
+    private List<GroupItem> generateList(ElementList elementList)
+    {
+        List<GroupItem> list = new ArrayList<>();
+        for (Map.Entry<String, List<String>> entry : elementList.getMap().entrySet())
+        {
+            List<BaseNode> list2 = new ArrayList<>();
+            for (String name : entry.getValue())
+            {
+                list2.add(new ElementItem(name));
+            }
+            list.add(new GroupItem(entry.getKey(), list2));
+        }
+        return list;
     }
 
     public void inputDialog()

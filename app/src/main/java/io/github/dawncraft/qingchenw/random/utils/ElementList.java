@@ -5,8 +5,8 @@ import android.util.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,102 +25,38 @@ public class ElementList
     public static final CharSequence NEW_LINE = "\n";
 
     // 元素列表
-    private List<String> groups = new ArrayList<>();
-    private Map<String, List<String>> elements = new HashMap<>();
+    private Map<String, List<String>> elements;
 
     // 请使用最下面的两个from方法实例化此类
-    private ElementList() {}
+    private ElementList()
+    {
+        this(new LinkedHashMap<>());
+    }
 
-    @Deprecated
+    // 如果你有Map请使用这个构造函数实例化此类,否则请老老实实地读字符串去
+    public ElementList(Map<String, List<String>> map)
+    {
+        this.elements = map;
+    }
+
     public Map<String, List<String>> getMap()
     {
         return elements;
     }
 
-    public boolean isEmpty()
-    {
-        return elements.isEmpty();
-    }
-
-    public List<String> getGroups()
-    {
-        return new ArrayList<String>(elements.keySet());
-    }
-
-    public boolean hasGroup(String key)
-    {
-        return elements.containsKey(key);
-    }
-
-    public List<String> getGroup(String key)
-    {
-        return elements.get(key);
-    }
-
-    public void addGroup(String key)
-    {
-        if (!hasGroup(key))
-        {
-            elements.put(key, new ArrayList<String>());
-        }
-    }
-
-    public void removeGroup(String key)
-    {
-        elements.remove(key);
-    }
-
-    public void clearGroups()
-    {
-        elements.clear();
-    }
-
-    public boolean hasElement(String key, String value)
-    {
-        if (hasGroup(key))
-        {
-            return getGroup(key).contains(value);
-        }
-        return false;
-    }
-
-    public void addElement(String key, String value)
-    {
-        if (hasGroup(key))
-        {
-            getGroup(key).add(value);
-        }
-    }
-
-    public void removeElement(String key, String value)
-    {
-        if (hasGroup(key))
-        {
-            getGroup(key).remove(value);
-        }
-    }
-
-    public void clearElements(String key)
-    {
-        if (hasGroup(key))
-        {
-            elements.get(key).clear();
-        }
-    }
-
     public void merge(ElementList list)
     {
-        for (Map.Entry<String, List<String>> entry : list.elements.entrySet())
+        for (Map.Entry<String, List<String>> entry : list.getMap().entrySet())
         {
-            if (!hasGroup(entry.getKey())) addGroup(entry.getKey());
-            getGroup(entry.getKey()).addAll(entry.getValue());
+            if (!getMap().containsKey(entry.getKey())) getMap().put(entry.getKey(), new ArrayList<>());
+            getMap().get(entry.getKey()).addAll(entry.getValue());
         }
     }
 
     public List<Pair<String, String>> toList()
     {
         List<Pair<String, String>> list = new ArrayList<>();
-        for (Map.Entry<String, List<String>> entry : elements.entrySet())
+        for (Map.Entry<String, List<String>> entry : getMap().entrySet())
         {
             for (String name : entry.getValue())
             {
@@ -136,7 +72,7 @@ public class ElementList
     public String serialize()
     {
         StringBuilder sb = new StringBuilder();
-        Iterator<Map.Entry<String, List<String>>> iterator = elements.entrySet().iterator();
+        Iterator<Map.Entry<String, List<String>>> iterator = getMap().entrySet().iterator();
         while (iterator.hasNext())
         {
             Map.Entry<String, List<String>> entry = iterator.next();
@@ -159,8 +95,8 @@ public class ElementList
             int pos = group.indexOf(":");
             String name = group.substring(0, pos - 1);
             String[] elements = group.substring(pos + 1).split(String.valueOf(DELIMITER_ELEMENT));
-            addGroup(name);
-            Collections.addAll(getGroup(name), elements);
+            if (!getMap().containsKey(name)) getMap().put(name, new ArrayList<>());
+            Collections.addAll(getMap().get(name), elements);
         }
     }
 
@@ -170,7 +106,7 @@ public class ElementList
     public String write()
     {
         StringBuilder sb = new StringBuilder();
-        Iterator<Map.Entry<String, List<String>>> iterator = elements.entrySet().iterator();
+        Iterator<Map.Entry<String, List<String>>> iterator = getMap().entrySet().iterator();
         while (iterator.hasNext())
         {
             Map.Entry<String, List<String>> entry = iterator.next();
@@ -193,8 +129,8 @@ public class ElementList
             String[] elements = group.split(String.valueOf(DELIMITER_ELEMENT));
             List<String> list = Arrays.asList(elements);
             String name = list.remove(0);
-            addGroup(name);
-            getGroup(name).addAll(list);
+            if (!getMap().containsKey(name)) getMap().put(name, new ArrayList<>());
+            getMap().get(name).addAll(list);
         }
     }
 

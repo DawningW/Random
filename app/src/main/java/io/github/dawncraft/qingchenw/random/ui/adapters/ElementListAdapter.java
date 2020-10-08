@@ -1,26 +1,61 @@
 package io.github.dawncraft.qingchenw.random.ui.adapters;
 
-import android.content.DialogInterface;
-import android.view.View;
-import android.widget.EditText;
+import com.chad.library.adapter.base.BaseNodeAdapter;
+import com.chad.library.adapter.base.entity.node.BaseNode;
 
-import androidx.appcompat.app.AlertDialog;
-
-import com.chad.library.adapter.base.BaseSectionQuickAdapter;
-import com.chad.library.adapter.base.viewholder.BaseViewHolder;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import io.github.dawncraft.qingchenw.random.R;
-import io.github.dawncraft.qingchenw.random.utils.SystemUtils;
+import io.github.dawncraft.qingchenw.random.ui.adapters.entities.ElementItem;
+import io.github.dawncraft.qingchenw.random.ui.adapters.entities.GroupItem;
+import io.github.dawncraft.qingchenw.random.ui.adapters.providers.ElementProvider;
+import io.github.dawncraft.qingchenw.random.ui.adapters.providers.GroupProvider;
 
-public class ElementListAdapter extends BaseSectionQuickAdapter<ElementListEntity<String>, BaseViewHolder>
+public class ElementListAdapter extends BaseNodeAdapter
 {
-    public ElementListAdapter(List<ElementListEntity<String>> data)
+    public static final int EXPAND_COLLAPSE_PAYLOAD = 100;
+
+    public ElementListAdapter()
     {
-        super(R.layout.item_element, R.layout.item_group, data);
+        super();
+        addNodeProvider(new GroupProvider());
+        addNodeProvider(new ElementProvider());
     }
 
+    @Override
+    protected int getItemType(@NotNull List<? extends BaseNode> data, int position)
+    {
+        BaseNode node = data.get(position);
+        if (node instanceof GroupItem)
+        {
+            return 1;
+        }
+        else if (node instanceof ElementItem)
+        {
+            return 2;
+        }
+        return -1;
+    }
+
+    public enum ItemType
+    {
+        GROUP(1), ELEMENT(2), ADD_GROUP(3), ADD_ELEMENT(4);
+
+        int _id;
+
+        ItemType(int id)
+        {
+            this._id = id;
+        }
+
+        public int getID()
+        {
+            return _id;
+        }
+    }
+
+    /*
     @Override
     protected void convert(BaseViewHolder holder, ElementListEntity<String> item)
     {
@@ -65,10 +100,5 @@ public class ElementListAdapter extends BaseSectionQuickAdapter<ElementListEntit
             }
         });
     }
-
-    @Override
-    protected void convertHeader(BaseViewHolder holder, ElementListEntity<String> item)
-    {
-        holder.setText(R.id.nameText, item.getHeader());
-    }
+    */
 }
